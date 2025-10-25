@@ -15,7 +15,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="text-2xl font-luxury font-bold gradient-text">
-              LUXURY STREETWEAR
+              ART CONNECT US
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed">
               Premium streetwear for the modern urban lifestyle. 

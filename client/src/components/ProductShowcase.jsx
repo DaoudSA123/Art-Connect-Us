@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
 
 const ProductShowcase = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const [selectedSizes, setSelectedSizes] = useState({});
   const sectionRef = useRef(null);
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     fetchProducts();
@@ -28,8 +33,8 @@ const ProductShowcase = () => {
         }
       },
       {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
+        threshold: 0.05,
+        rootMargin: '0px 0px -20px 0px'
       }
     );
 
@@ -37,14 +42,14 @@ const ProductShowcase = () => {
       observer.observe(sectionRef.current);
     }
 
-    // Fallback timeout: make visible after 2 seconds if not triggered by scroll
+    // Fallback timeout: make visible after 1 second if not triggered by scroll
     const fallbackTimeout = setTimeout(() => {
       if (!isVisible) {
         console.log('Fallback timeout triggered, making visible');
         setIsVisible(true);
         observer.disconnect();
       }
-    }, 2000);
+    }, 1000);
 
     return () => {
       observer.disconnect();
@@ -64,6 +69,40 @@ const ProductShowcase = () => {
     }
   };
 
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+  };
+
+  const handleSizeSelect = (productId, size, e) => {
+    e.stopPropagation();
+    setSelectedSizes(prev => ({
+      ...prev,
+      [productId]: size
+    }));
+  };
+
+  const handleAddToCart = async (product, e) => {
+    e.stopPropagation();
+    
+    if (!product.inStock) {
+      alert(`${product.name} is currently sold out. We'll notify you when it's back in stock!`);
+      return;
+    }
+
+    const selectedSize = selectedSizes[product.id];
+    if (!selectedSize) {
+      alert('Please select a size before adding to cart.');
+      return;
+    }
+
+    const success = await addToCart(product, selectedSize, 1);
+    if (success) {
+      alert(`Added ${product.name} (Size: ${selectedSize}) to cart!`);
+    } else {
+      alert('Failed to add item to cart. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <section className="py-24 px-4 bg-luxury-black">
@@ -79,6 +118,7 @@ const ProductShowcase = () => {
 
   return (
     <section 
+      id="product-showcase"
       ref={sectionRef} 
       className={`py-24 px-4 bg-luxury-black ${isVisible ? 'fade-in-visible' : 'fade-in-hidden'}`}
     >
@@ -92,7 +132,7 @@ const ProductShowcase = () => {
             </span>
           </div>
           <h2 className="text-6xl md:text-7xl font-street font-bold mb-6 text-white">
-            DROP
+           NEWEST DROP
           </h2>
           <div className="flex items-center justify-center mb-8">
             <div className="w-16 h-0.5 bg-dark-maroon"></div>
@@ -109,7 +149,8 @@ const ProductShowcase = () => {
           {products.map((product, index) => (
             <div 
               key={product.id} 
-              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-2 border border-gray-800 hover:border-dark-maroon hover:border-opacity-60 product-card"
+              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-2 border border-gray-800 hover:border-dark-maroon hover:border-opacity-60 product-card cursor-pointer"
+              onClick={() => handleProductClick(product.id)}
             >
               {/* Product Image */}
               <div className="relative overflow-hidden aspect-square bg-luxury-black">
@@ -130,7 +171,13 @@ const ProductShowcase = () => {
                 
                 {/* Quick View Button */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-40">
-                  <button className="bg-white text-luxury-black font-semibold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                  <button 
+                    className="bg-white text-luxury-black font-semibold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleProductClick(product.id);
+                    }}
+                  >
                     Quick View
                   </button>
                 </div>
@@ -162,7 +209,12 @@ const ProductShowcase = () => {
                       {['S', 'M', 'L', 'XL'].map((size) => (
                         <button 
                           key={size}
-                          className="w-8 h-8 border border-gray-500 hover:border-dark-maroon hover:bg-dark-maroon hover:text-white text-gray-300 hover:text-white text-xs font-street font-bold rounded-none transition-all duration-300"
+                          onClick={(e) => handleSizeSelect(product.id, size, e)}
+                          className={`size-button w-8 h-8 text-xs font-street font-bold rounded-none transition-all duration-300 ${
+                            selectedSizes[product.id] === size
+                              ? 'selected'
+                              : 'border-gray-500 hover:border-dark-maroon hover:bg-dark-maroon hover:text-white text-gray-300 hover:text-white'
+                          }`}
                         >
                           {size}
                         </button>
@@ -172,7 +224,10 @@ const ProductShowcase = () => {
                 </div>
                 
                 {/* Add to Cart Button */}
-                <button className="w-full bg-dark-navy hover:bg-dark-maroon text-white font-street font-bold py-3 px-4 rounded-none transition-all duration-300 transform hover:scale-105 border border-dark-navy hover:border-dark-maroon uppercase tracking-widest text-sm">
+                <button 
+                  className="w-full bg-dark-navy hover:bg-dark-maroon text-white font-street font-bold py-3 px-4 rounded-none transition-all duration-300 transform hover:scale-105 border border-dark-navy hover:border-dark-maroon uppercase tracking-widest text-sm"
+                  onClick={(e) => handleAddToCart(product, e)}
+                >
                   {!product.inStock ? '/// NOTIFY' : '/// ADD TO CART'}
                 </button>
               </div>
@@ -181,29 +236,7 @@ const ProductShowcase = () => {
         </div>
 
         {/* View All Section */}
-        <div className="text-center mt-20">
-          <div className="bg-gradient-to-r from-dark-navy to-luxury-black rounded-none p-12 border border-gray-800">
-            <div className="mb-6">
-              <span className="text-dark-maroon text-sm font-mono font-medium uppercase tracking-widest">
-                /// MORE DROPS
-              </span>
-            </div>
-            <h3 className="text-4xl font-street font-bold text-white mb-6">
-              FULL COLLECTION
-            </h3>
-            <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto font-street font-medium">
-              ESSENTIALS. STATEMENTS. LIMITED EDITIONS.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-dark-navy hover:bg-dark-maroon text-white font-street font-bold py-4 px-8 rounded-none transition-all duration-300 transform hover:scale-105 uppercase tracking-widest border-2 border-dark-navy hover:border-dark-maroon">
-                /// VIEW ALL
-              </button>
-              <button className="bg-transparent border-2 border-dark-navy hover:bg-dark-navy text-dark-navy hover:text-white font-street font-bold py-4 px-8 rounded-none transition-all duration-300 transform hover:scale-105 uppercase tracking-widest">
-                /// CATEGORIES
-              </button>
-            </div>
-          </div>
-        </div>
+       
       </div>
     </section>
   );
