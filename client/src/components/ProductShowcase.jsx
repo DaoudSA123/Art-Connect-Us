@@ -145,15 +145,15 @@ const ProductShowcase = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="flex justify-center items-start gap-8">
           {products.map((product, index) => (
             <div 
               key={product.id} 
-              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-2 border border-gray-800 hover:border-dark-maroon hover:border-opacity-60 product-card cursor-pointer"
+              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-2 border border-gray-800 hover:border-dark-maroon hover:border-opacity-60 product-card cursor-pointer flex-shrink-0 w-[280px] sm:w-[300px]"
               onClick={() => handleProductClick(product.id)}
             >
               {/* Product Image */}
-              <div className="relative overflow-hidden aspect-square bg-luxury-black">
+              <div className=" relative overflow-hidden aspect-square bg-luxury-black">
                 <img 
                   src={product.image} 
                   alt={product.name}
