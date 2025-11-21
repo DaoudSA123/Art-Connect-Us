@@ -15,7 +15,7 @@ const About = () => {
             className={`space-y-6 ${contentVisible ? 'fade-in-left visible' : 'fade-in-left'}`}
           >
             <div className="mb-6">
-              <span className="text-dark-maroon text-sm font-mono font-medium uppercase tracking-widest">
+              <span className="text-gray-300 text-sm font-mono font-medium uppercase tracking-widest">
                 /// OUR STORY
               </span>
             </div>
@@ -25,9 +25,9 @@ const About = () => {
             </h2>
             
             <div className="flex items-center mb-8">
-              <div className="w-16 h-0.5 bg-dark-maroon"></div>
-              <div className="mx-4 w-2 h-2 bg-dark-maroon rotate-45"></div>
-              <div className="w-16 h-0.5 bg-dark-maroon"></div>
+              <div className="w-16 h-0.5 bg-gray-400"></div>
+              <div className="mx-4 w-2 h-2 bg-gray-400 rotate-45"></div>
+              <div className="w-16 h-0.5 bg-gray-400"></div>
             </div>
             
             <div className="space-y-4 text-gray-300 text-lg font-street font-medium">
@@ -46,15 +46,15 @@ const About = () => {
             
             <div className="flex flex-wrap gap-6 pt-6">
               <div className="text-center">
-                <div className="text-4xl font-mono font-bold text-dark-maroon">5+</div>
+                <div className="text-4xl font-mono font-bold text-white">5+</div>
                 <div className="text-sm text-gray-400 font-mono font-medium uppercase tracking-widest">/// YEARS</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-mono font-bold text-dark-maroon">10K+</div>
+                <div className="text-4xl font-mono font-bold text-white">10K+</div>
                 <div className="text-sm text-gray-400 font-mono font-medium uppercase tracking-widest">/// FAM</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-mono font-bold text-dark-maroon">100%</div>
+                <div className="text-4xl font-mono font-bold text-white">100%</div>
                 <div className="text-sm text-gray-400 font-mono font-medium uppercase tracking-widest">/// REAL</div>
               </div>
             </div>
@@ -75,7 +75,7 @@ const About = () => {
             </div>
             
             {/* Decorative Elements */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 border-2 border-dark-maroon opacity-30"></div>
+            <div className="absolute -top-4 -right-4 w-24 h-24 border-2 border-gray-400 opacity-30"></div>
             <div className="absolute -bottom-4 -left-4 w-16 h-16 border-2 border-dark-navy opacity-30"></div>
           </div>
         </div>

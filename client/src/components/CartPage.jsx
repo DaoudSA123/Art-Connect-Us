@@ -39,9 +39,13 @@ const CartPage = () => {
   };
 
   const handleUpdateQuantity = async (productId, size, newQuantity) => {
+    console.log('Updating quantity:', { productId, size, newQuantity });
     const success = await updateQuantity(productId, size, newQuantity);
     if (!success) {
+      console.error('Failed to update quantity');
       alert('Failed to update quantity. Please try again.');
+    } else {
+      console.log('Quantity updated successfully');
     }
   };
 
@@ -91,18 +95,27 @@ const CartPage = () => {
     return (
       <div className="bg-luxury-black text-white">
         {/* Header */}
-        <div className="bg-dark-navy py-12 px-4 sticky top-0 z-50 border-b-2 border-dark-maroon">
-        <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
-          <button
-            onClick={handleBackToProducts}
-            className="text-dark-maroon hover:text-white transition-colors duration-300 font-street font-bold uppercase tracking-widest text-lg md:text-xl justify-self-start"
-          >
-            ← Back to Collection
-          </button>
-          <h1 className="text-2xl md:text-3xl font-street font-bold uppercase tracking-widest text-center">
-            Shopping Cart
-          </h1>
-          <div></div>
+        <div className="bg-dark-navy py-8 md:py-12 px-4 sticky top-0 z-40 border-b-2 border-gray-600">
+        <div className="max-w-7xl mx-auto">
+          {/* Desktop: Grid layout with back button */}
+          <div className="hidden md:grid grid-cols-3 items-center">
+            <button
+              onClick={handleBackToProducts}
+              className="text-white hover:text-gray-300 transition-colors duration-300 font-street font-bold uppercase tracking-widest text-lg md:text-xl justify-self-start"
+            >
+              ← Back to Collection
+            </button>
+            <h1 className="text-2xl md:text-3xl font-street font-bold uppercase tracking-widest text-center">
+              Shopping Cart
+            </h1>
+            <div></div>
+          </div>
+          {/* Mobile: Centered title only, no buttons */}
+          <div className="md:hidden text-center">
+            <h1 className="text-xl font-street font-bold uppercase tracking-widest">
+              Shopping Cart
+            </h1>
+          </div>
         </div>
         </div>
 
@@ -146,35 +159,57 @@ const CartPage = () => {
   return (
     <div className="bg-luxury-black text-white flex flex-col min-h-screen">
       {/* Header */}
-      <div className="bg-dark-navy py-12 px-4 sticky top-0 z-50 border-b-2 border-dark-maroon">
-        <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
-          <button
-            onClick={handleBackToProducts}
-            className="text-dark-maroon hover:text-white transition-colors duration-300 font-street font-bold uppercase tracking-widest text-lg md:text-xl justify-self-start"
-          >
-            ← Back to Collection
-          </button>
-          <h1 className="text-2xl md:text-3xl font-street font-bold uppercase tracking-widest text-center">
-            Shopping Cart ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})
-          </h1>
-          <button
-            onClick={handleClearCart}
-            className="text-gray-400 hover:text-white transition-colors duration-300 font-street font-bold uppercase tracking-widest text-sm justify-self-end"
-          >
-            Clear All
-          </button>
+      <div className="bg-dark-navy py-8 md:py-12 px-4 sticky top-0 z-40 border-b-2 border-gray-600 relative">
+        {/* Mobile: Back button at left edge of screen */}
+        <button
+          onClick={handleBackToProducts}
+          className="md:hidden absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700/80 text-white p-2 rounded-full transition-all duration-300 shadow-md border border-gray-600/40 flex items-center justify-center z-50"
+          style={{
+            width: '36px',
+            height: '36px'
+          }}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div className="max-w-7xl mx-auto">
+          {/* Desktop: Grid layout with back button */}
+          <div className="hidden md:grid grid-cols-3 items-center">
+            <button
+              onClick={handleBackToProducts}
+              className="text-white hover:text-gray-300 transition-colors duration-300 font-street font-bold uppercase tracking-widest text-lg md:text-xl justify-self-start"
+            >
+              ← Back to Collection
+            </button>
+            <h1 className="text-2xl md:text-3xl font-street font-bold uppercase tracking-widest text-center">
+              Shopping Cart ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})
+            </h1>
+            <button
+              onClick={handleClearCart}
+              className="text-gray-400 hover:text-white transition-colors duration-300 font-street font-bold uppercase tracking-widest text-sm justify-self-end"
+            >
+              Clear All
+            </button>
+          </div>
+          {/* Mobile: Centered title */}
+          <div className="md:hidden text-center">
+            <h1 className="text-xl font-street font-bold uppercase tracking-widest">
+              Shopping Cart ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})
+            </h1>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 pt-12">
+        <div className="max-w-7xl mx-auto px-4 pt-8 md:pt-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Cart Items */}
             <div className="lg:col-span-2">
               <div className="space-y-6">
                 {cartItems.map((item) => (
-                  <div key={`${item.id}-${item.size}`} className="bg-luxury-black border border-gray-800 p-6 hover:border-dark-maroon/50 transition-colors duration-300">
+                  <div key={`${item.productId || item.id}-${item.size}`} className="bg-luxury-black border border-gray-800 p-6 hover:border-dark-maroon/50 transition-colors duration-300">
                     <div className="flex items-center space-x-6">
                       {/* Product Image */}
                       <div className="w-24 h-24 bg-luxury-black border border-gray-700 overflow-hidden flex-shrink-0">
@@ -194,7 +229,7 @@ const CartPage = () => {
                           Size: {item.size}
                         </p>
                         <p className="text-2xl font-mono font-bold text-white">
-                          ${item.price}
+                          ${item.price} CAD
                         </p>
                       </div>
 
@@ -202,8 +237,13 @@ const CartPage = () => {
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center border border-gray-600">
                           <button
-                            onClick={() => handleUpdateQuantity(item.productId, item.size, item.quantity - 1)}
-                            className="w-10 h-10 bg-transparent hover:bg-dark-maroon text-gray-300 hover:text-white transition-colors duration-300 font-street font-bold"
+                            onClick={() => {
+                              if (item.quantity > 1) {
+                                handleUpdateQuantity(item.productId || item.id, item.size, item.quantity - 1);
+                              }
+                            }}
+                            disabled={item.quantity <= 1}
+                            className="w-10 h-10 bg-transparent hover:bg-dark-maroon text-gray-300 hover:text-white transition-colors duration-300 font-street font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             −
                           </button>
@@ -211,8 +251,19 @@ const CartPage = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => handleUpdateQuantity(item.productId, item.size, item.quantity + 1)}
-                            className="w-10 h-10 bg-transparent hover:bg-dark-maroon text-gray-300 hover:text-white transition-colors duration-300 font-street font-bold"
+                            onClick={() => {
+                              if (item.quantity < 10) {
+                                console.log('Cart item before update:', item);
+                                console.log('Updating with:', { 
+                                  productId: item.productId || item.id, 
+                                  size: item.size, 
+                                  newQuantity: item.quantity + 1 
+                                });
+                                handleUpdateQuantity(item.productId || item.id, item.size, item.quantity + 1);
+                              }
+                            }}
+                            disabled={item.quantity >= 10}
+                            className="w-10 h-10 bg-transparent hover:bg-dark-maroon text-gray-300 hover:text-white transition-colors duration-300 font-street font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             +
                           </button>
@@ -220,7 +271,7 @@ const CartPage = () => {
 
                         {/* Remove Button */}
                         <button
-                          onClick={() => handleRemoveItem(item.productId, item.size)}
+                          onClick={() => handleRemoveItem(item.productId || item.id, item.size)}
                           className="text-gray-500 hover:text-red-400 transition-colors duration-300 font-street font-bold uppercase tracking-widest text-sm"
                         >
                           Remove
@@ -242,22 +293,22 @@ const CartPage = () => {
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400 font-street">Subtotal</span>
-                    <span className="text-white font-mono font-bold">${subtotal.toFixed(2)}</span>
+                    <span className="text-white font-mono font-bold">${subtotal.toFixed(2)} CAD</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400 font-street">Shipping</span>
                     <span className="text-white font-mono font-bold">
-                      {shipping > 0 ? `$${shipping.toFixed(2)}` : 'Free'}
+                      {shipping > 0 ? `$${shipping.toFixed(2)} CAD` : 'Free'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400 font-street">Tax</span>
-                    <span className="text-white font-mono font-bold">${tax.toFixed(2)}</span>
+                    <span className="text-white font-mono font-bold">${tax.toFixed(2)} CAD</span>
                   </div>
                   <div className="border-t border-gray-700 pt-4">
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-street font-bold uppercase tracking-widest text-white">Total</span>
-                      <span className="text-2xl font-mono font-bold text-white">${total.toFixed(2)}</span>
+                      <span className="text-2xl font-mono font-bold text-white">${total.toFixed(2)} CAD</span>
                     </div>
                   </div>
                 </div>

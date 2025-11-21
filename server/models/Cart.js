@@ -142,12 +142,21 @@ cartSchema.methods.removeItem = function(productId, size) {
 
 // Instance method to update item quantity
 cartSchema.methods.updateQuantity = function(productId, size, newQuantity) {
-  const item = this.items.find(item => item.productId === productId && item.size === size);
+  // Normalize productId to string for comparison
+  const productIdStr = String(productId);
+  const sizeStr = String(size);
+  
+  const item = this.items.find(item => {
+    const itemProductId = String(item.productId || item.id || '');
+    return itemProductId === productIdStr && String(item.size) === sizeStr;
+  });
+  
   if (item) {
-    if (newQuantity <= 0) {
-      return this.removeItem(productId, size);
-    }
-    item.quantity = Math.min(newQuantity, 10); // Max 10 items
+    // Ensure quantity is between 1 and 10
+    item.quantity = Math.max(1, Math.min(newQuantity, 10));
+    console.log('Updated item quantity:', { productId: productIdStr, size: sizeStr, newQuantity: item.quantity });
+  } else {
+    console.warn('Item not found for update:', { productId: productIdStr, size: sizeStr, availableItems: this.items.map(i => ({ productId: i.productId, size: i.size })) });
   }
   return this.save();
 };

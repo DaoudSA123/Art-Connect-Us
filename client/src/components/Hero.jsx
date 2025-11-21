@@ -16,7 +16,7 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
         <div className="mb-6 animate-fade-in">
-          <span className="text-dark-maroon text-sm font-mono font-medium uppercase tracking-widest">
+          <span className="text-gray-300 text-sm font-mono font-medium uppercase tracking-widest">
             /// EST. 2024
           </span>
         </div>
@@ -35,9 +35,9 @@ const Hero = () => {
         </div>
         
         <div className="flex items-center justify-center mb-1 animate-slide-up" style={{ marginTop: '-8px' }}>
-          <div className="w-20 h-0.5 bg-dark-maroon"></div>
-          <div className="mx-6 w-3 h-3 bg-dark-maroon rotate-45"></div>
-          <div className="w-20 h-0.5 bg-dark-maroon"></div>
+          <div className="w-20 h-0.5 bg-gray-400"></div>
+          <div className="mx-6 w-3 h-3 bg-gray-400 rotate-45"></div>
+          <div className="w-20 h-0.5 bg-gray-400"></div>
         </div>
         
         <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto font-street font-medium animate-slide-up">
@@ -51,8 +51,8 @@ const Hero = () => {
       
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-dark-maroon rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-dark-maroon rounded-full mt-2 animate-pulse"></div>
+        <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+          <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse"></div>
         </div>
       </div>
     </section>

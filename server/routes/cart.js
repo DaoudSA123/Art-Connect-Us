@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Cart = require('../models/Cart');
 const rateLimit = require('express-rate-limit');
 
@@ -43,10 +44,10 @@ const validateProductData = (req, res, next) => {
     });
   }
   
-  if (!size || !['S', 'M', 'L', 'XL'].includes(size)) {
+  if (!size || typeof size !== 'string' || size.trim().length === 0) {
     return res.status(400).json({
       error: 'Invalid size',
-      message: 'Size must be S, M, L, or XL'
+      message: 'Size must be a non-empty string'
     });
   }
   
@@ -102,6 +103,15 @@ router.get('/:sessionId', validateCartInput, async (req, res) => {
 // POST /api/cart/:sessionId/add - Add item to cart
 router.post('/:sessionId/add', validateCartInput, validateProductData, async (req, res) => {
   try {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database unavailable',
+        message: 'MongoDB is not connected. Please check your database connection.'
+      });
+    }
+    
     const { sessionId } = req.params;
     const { product, size, quantity } = req.body;
     
@@ -122,6 +132,7 @@ router.post('/:sessionId/add', validateCartInput, validateProductData, async (re
   } catch (error) {
     console.error('Error adding item to cart:', error);
     res.status(500).json({
+      success: false,
       error: 'Internal server error',
       message: 'Failed to add item to cart'
     });
@@ -131,8 +142,19 @@ router.post('/:sessionId/add', validateCartInput, validateProductData, async (re
 // PUT /api/cart/:sessionId/update - Update item quantity
 router.put('/:sessionId/update', validateCartInput, async (req, res) => {
   try {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database unavailable',
+        message: 'MongoDB is not connected. Please check your database connection.'
+      });
+    }
+    
     const { sessionId } = req.params;
     const { productId, size, quantity } = req.body;
+    
+    console.log('Update quantity request:', { sessionId, productId, size, quantity });
     
     if (!productId || !size || quantity === undefined) {
       return res.status(400).json({
@@ -144,28 +166,50 @@ router.put('/:sessionId/update', validateCartInput, async (req, res) => {
     const cart = await Cart.findOne({ sessionId });
     
     if (!cart) {
+      console.log('Cart not found for session:', sessionId);
       return res.status(404).json({
         error: 'Cart not found',
         message: 'No cart found for this session'
       });
     }
     
+    console.log('Cart found with', cart.items.length, 'items');
+    console.log('Cart items:', cart.items.map(i => ({ productId: i.productId, size: i.size, quantity: i.quantity })));
+    
     await cart.updateQuantity(productId, size, quantity);
+    
+    // Reload cart to ensure we have the latest data
+    const updatedCart = await Cart.findOne({ sessionId });
+    
+    if (!updatedCart) {
+      return res.status(404).json({
+        success: false,
+        error: 'Cart not found',
+        message: 'Cart was not found after update'
+      });
+    }
+    
+    // Ensure we have items
+    const items = updatedCart.items || [];
+    
+    console.log('Cart update - returning items:', items.length, 'items');
+    console.log('Updated items:', items.map(i => ({ productId: i.productId, size: i.size, quantity: i.quantity })));
     
     res.json({
       success: true,
       message: 'Item quantity updated successfully',
       data: {
-        sessionId: cart.sessionId,
-        items: cart.items,
-        total: cart.total,
-        itemCount: cart.itemCount
+        sessionId: updatedCart.sessionId,
+        items: items,
+        total: updatedCart.total || 0,
+        itemCount: updatedCart.itemCount || 0
       }
     });
     
   } catch (error) {
     console.error('Error updating cart:', error);
     res.status(500).json({
+      success: false,
       error: 'Internal server error',
       message: 'Failed to update cart'
     });
@@ -175,6 +219,15 @@ router.put('/:sessionId/update', validateCartInput, async (req, res) => {
 // DELETE /api/cart/:sessionId/remove - Remove item from cart
 router.delete('/:sessionId/remove', validateCartInput, async (req, res) => {
   try {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database unavailable',
+        message: 'MongoDB is not connected. Please check your database connection.'
+      });
+    }
+    
     const { sessionId } = req.params;
     const { productId, size } = req.body;
     
@@ -210,6 +263,7 @@ router.delete('/:sessionId/remove', validateCartInput, async (req, res) => {
   } catch (error) {
     console.error('Error removing item from cart:', error);
     res.status(500).json({
+      success: false,
       error: 'Internal server error',
       message: 'Failed to remove item from cart'
     });
@@ -219,6 +273,15 @@ router.delete('/:sessionId/remove', validateCartInput, async (req, res) => {
 // DELETE /api/cart/:sessionId/clear - Clear entire cart
 router.delete('/:sessionId/clear', validateCartInput, async (req, res) => {
   try {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database unavailable',
+        message: 'MongoDB is not connected. Please check your database connection.'
+      });
+    }
+    
     const { sessionId } = req.params;
     
     const cart = await Cart.findOne({ sessionId });
@@ -246,6 +309,7 @@ router.delete('/:sessionId/clear', validateCartInput, async (req, res) => {
   } catch (error) {
     console.error('Error clearing cart:', error);
     res.status(500).json({
+      success: false,
       error: 'Internal server error',
       message: 'Failed to clear cart'
     });
