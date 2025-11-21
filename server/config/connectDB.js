@@ -39,7 +39,9 @@ const connectDB = async () => {
     
   } catch (error) {
     console.error('Database connection failed:', error);
-    process.exit(1);
+    console.error('Server will continue to run, but cart functionality may be limited.');
+    console.error('Please ensure MongoDB is running and MONGODB_URI is correct.');
+    // Don't exit - allow server to run without database
   }
 };
 

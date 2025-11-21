@@ -72,29 +72,19 @@ app.use((req, res, next) => {
 const products = [
   {
     id: 1,
-    name: "Navy Hoodie",
-    price: 89.99,
-    image: "/images/ACU SHOOT E/_DSF3019.jpg",
-    category: "Hoodies",
-    description: "Premium dark navy hoodie with luxury streetwear design",
-    inStock: true
-  },
-  {
-    id: 2,
-    name: "Black Hoodie",
-    price: 89.99,
-    image: "/images/ACU SHOOT E/_DSF3059.jpg",
-    category: "Hoodies",
-    description: "Classic black hoodie with premium materials and modern fit",
-    inStock: true
-  },
-  {
-    id: 3,
-    name: "Maroon Hoodie",
-    price: 89.99,
-    image: "/images/ACU SHOOT E/_DSF3034.jpg",
-    category: "Hoodies",
-    description: "Matte maroon hoodie with premium cotton blend and streetwear aesthetic",
+    name: "Levi 'FRAGILE' RAW DENIM Straight Jeans",
+    price: 69.99,
+    image: "/thumbnail_jeanfront.png",
+    images: [
+      "/thumbnail_jeanfront.png",
+      "/thumbnail_jeanback.png",
+      "/thumbnail_IMG_0566.jpg",
+      "/thumbnail_IMG_0565.jpg"
+    ],
+    category: "Jeans",
+    description: "Premium straight fit jean with classic design and modern comfort. Size 32\" waist available.",
+    size: "32\"",
+    sizeGuide: "Straight Fit",
     inStock: true
   }
 ];

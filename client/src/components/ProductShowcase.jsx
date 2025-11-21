@@ -6,7 +6,6 @@ const ProductShowcase = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedSizes, setSelectedSizes] = useState({});
   const sectionRef = useRef(null);
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -73,14 +72,6 @@ const ProductShowcase = () => {
     navigate(`/product/${productId}`);
   };
 
-  const handleSizeSelect = (productId, size, e) => {
-    e.stopPropagation();
-    setSelectedSizes(prev => ({
-      ...prev,
-      [productId]: size
-    }));
-  };
-
   const handleAddToCart = async (product, e) => {
     e.stopPropagation();
     
@@ -89,15 +80,11 @@ const ProductShowcase = () => {
       return;
     }
 
-    const selectedSize = selectedSizes[product.id];
-    if (!selectedSize) {
-      alert('Please select a size before adding to cart.');
-      return;
-    }
-
-    const success = await addToCart(product, selectedSize, 1);
+    // For single size products, use the product's size
+    const size = product.size || '32"';
+    const success = await addToCart(product, size, 1);
     if (success) {
-      alert(`Added ${product.name} (Size: ${selectedSize}) to cart!`);
+      alert(`Added ${product.name} (Size: ${size}) to cart!`);
     } else {
       alert('Failed to add item to cart. Please try again.');
     }
@@ -127,7 +114,7 @@ const ProductShowcase = () => {
         {/* Section Header */}
         <div className="text-center mb-20">
           <div className="inline-block mb-6">
-            <span className="text-dark-maroon text-sm font-mono font-medium uppercase tracking-widest">
+            <span className="text-gray-300 text-sm font-mono font-medium uppercase tracking-widest">
               /// COLLECTION
             </span>
           </div>
@@ -135,9 +122,9 @@ const ProductShowcase = () => {
            NEWEST DROP
           </h2>
           <div className="flex items-center justify-center mb-8">
-            <div className="w-16 h-0.5 bg-dark-maroon"></div>
-            <div className="mx-4 w-2 h-2 bg-dark-maroon rotate-45"></div>
-            <div className="w-16 h-0.5 bg-dark-maroon"></div>
+            <div className="w-16 h-0.5 bg-gray-400"></div>
+            <div className="mx-4 w-2 h-2 bg-gray-400 rotate-45"></div>
+            <div className="w-16 h-0.5 bg-gray-400"></div>
           </div>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto font-street font-medium">
             FRESH DROPS. PREMIUM QUALITY. STREET READY.
@@ -149,15 +136,15 @@ const ProductShowcase = () => {
           {products.map((product, index) => (
             <div 
               key={product.id} 
-              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-2 border border-gray-800 hover:border-dark-maroon hover:border-opacity-60 product-card cursor-pointer flex-shrink-0 w-[280px] sm:w-[300px]"
+              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-2 border border-gray-800 hover:border-dark-maroon hover:border-opacity-60 product-card cursor-pointer flex-shrink-0"
               onClick={() => handleProductClick(product.id)}
             >
               {/* Product Image */}
-              <div className=" relative overflow-hidden aspect-square bg-luxury-black">
+              <div className="relative overflow-hidden bg-luxury-black flex items-center justify-center" style={{ minHeight: '280px' }}>
                 <img 
                   src={product.image} 
                   alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-auto max-h-80 object-contain group-hover:scale-105 transition-transform duration-500"
                 />
                 
                 {/* Sold Out Overlay */}
@@ -186,39 +173,32 @@ const ProductShowcase = () => {
               {/* Product Info */}
               <div className="p-6 bg-luxury-black">
                 {/* Product Name */}
-                <h3 className="text-lg font-street font-bold uppercase tracking-widest mb-3 text-white group-hover:text-dark-maroon transition-colors duration-300">
+                <h3 className="text-lg font-street font-bold uppercase tracking-widest mb-3 text-white group-hover:text-gray-300 transition-colors duration-300">
                   {product.name}
                 </h3>
                 
                 {/* Price */}
                 <div className="mb-4">
                   <span className="text-2xl font-mono font-bold text-white">
-                    ${product.price}
+                    ${product.price} CAD
                   </span>
                 </div>
                 
-                {/* Size Options or Sold Out */}
+                {/* Size Display */}
                 <div className="mb-4">
                   {!product.inStock ? (
                     <div className="text-sm text-gray-500 font-mono font-medium uppercase tracking-widest">
                       /// SOLD OUT
                     </div>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      <span className="text-xs text-gray-400 font-mono font-medium uppercase tracking-widest mb-2 block w-full">/// SIZES</span>
-                      {['S', 'M', 'L', 'XL'].map((size) => (
-                        <button 
-                          key={size}
-                          onClick={(e) => handleSizeSelect(product.id, size, e)}
-                          className={`size-button w-8 h-8 text-xs font-street font-bold rounded-none transition-all duration-300 ${
-                            selectedSizes[product.id] === size
-                              ? 'selected'
-                              : 'border-gray-500 hover:border-dark-maroon hover:bg-dark-maroon hover:text-white text-gray-300 hover:text-white'
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
+                    <div>
+                      <span className="text-xs text-gray-400 font-mono font-medium uppercase tracking-widest mb-2 block">/// SIZE</span>
+                      <div className="text-base font-street font-bold text-white">
+                        {product.size || '32"'}
+                      </div>
+                      <div className="text-xs text-gray-400 font-mono font-medium mt-1">
+                        {product.sizeGuide || 'Straight Fit'}
+                      </div>
                     </div>
                   )}
                 </div>

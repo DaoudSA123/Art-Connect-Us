@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 
@@ -7,6 +7,16 @@ const CartIcon = () => {
   const location = useLocation();
   const { getCartItemCount } = useCart();
   const itemCount = getCartItemCount();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Hide cart icon when on cart page
   if (location.pathname === '/cart') {
@@ -23,7 +33,7 @@ const CartIcon = () => {
       style={{
         position: 'fixed',
         top: '24px',
-        right: '24px',
+        right: isMobile ? '28px' : '24px',
         zIndex: 9999,
         backgroundColor: '#4B1E1E',
         color: 'white',
@@ -37,7 +47,8 @@ const CartIcon = () => {
         alignItems: 'center',
         justifyContent: 'center',
         width: '56px',
-        height: '56px'
+        height: '56px',
+        maxWidth: 'calc(100vw - 48px)'
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = '#5A2A2A';
@@ -71,7 +82,7 @@ const CartIcon = () => {
           style={{
             position: 'absolute',
             top: '-8px',
-            right: '-8px',
+            right: isMobile ? '4px' : '-8px',
             backgroundColor: 'white',
             color: '#4B1E1E',
             fontSize: '12px',
