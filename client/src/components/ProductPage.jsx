@@ -105,7 +105,7 @@ const ProductPage = () => {
     return (
       <div className="min-h-screen bg-luxury-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-dark-maroon mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-denim-brown mx-auto"></div>
           <p className="mt-6 text-gray-400 text-lg">Loading product...</p>
         </div>
       </div>
@@ -120,7 +120,7 @@ const ProductPage = () => {
           <p className="text-gray-400 mb-8">The product you're looking for doesn't exist.</p>
           <button 
             onClick={handleBackToProducts}
-            className="bg-dark-navy hover:bg-dark-maroon text-white font-street font-bold py-3 px-6 rounded-none transition-all duration-300 uppercase tracking-widest"
+            className="bg-dark-navy hover:bg-denim-blue text-white font-street font-bold py-3 px-6 rounded-none transition-all duration-300 uppercase tracking-widest"
           >
             Back to Products
           </button>
@@ -132,7 +132,7 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-luxury-black text-white">
       {/* Header */}
-      <div className="bg-dark-navy py-8 md:py-12 px-4 sticky top-0 z-40 border-b-2 border-gray-600 relative">
+      <div className="bg-dark-navy py-5 md:py-8 px-4 sticky top-0 z-40 border-b-2 border-gray-600 relative">
         {/* Mobile: Back button at left edge of screen */}
         <button
           onClick={handleBackToProducts}
@@ -170,12 +170,12 @@ const ProductPage = () => {
       </div>
 
       {/* Product Content */}
-      <div className="max-w-7xl mx-auto py-8 md:py-12 px-4">
+      <div className="max-w-7xl mx-auto py-6 md:py-10 px-6 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Image */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div 
-              className="relative overflow-hidden rounded-none border-2 border-gray-700 bg-gray-900 flex items-center justify-center"
+              className="relative overflow-hidden rounded-none border-2 border-gray-700/80 bg-gray-900/50 flex items-center justify-center backdrop-blur-sm"
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
@@ -183,11 +183,11 @@ const ProductPage = () => {
               <img 
                 src={product.images ? product.images[selectedImageIndex] : product.image} 
                 alt={product.name}
-                className="w-full h-auto max-h-[500px] object-contain"
+                className="w-full h-auto max-h-[550px] object-contain"
               />
               {!product.inStock && (
-                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                  <span className="bg-dark-maroon text-white px-6 py-3 text-lg font-bold uppercase tracking-wider rounded">
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
+                  <span className="bg-denim-brown text-white px-7 py-3.5 text-lg font-bold uppercase tracking-wider rounded border border-denim-brown/50 shadow-lg">
                     Sold Out
                   </span>
                 </div>
@@ -195,17 +195,17 @@ const ProductPage = () => {
             </div>
             
             {/* Thumbnail Images */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-3">
               {(product.images || [product.image]).slice(0, 4).map((img, i) => (
                 <div 
                   key={i}
                   onClick={() => setSelectedImageIndex(i)}
-                  className={`rounded-none border-2 transition-all duration-300 cursor-pointer overflow-hidden flex items-center justify-center bg-gray-900 ${
+                  className={`rounded-none border-2 transition-all duration-300 cursor-pointer overflow-hidden flex items-center justify-center bg-gray-900/50 backdrop-blur-sm ${
                     selectedImageIndex === i 
-                      ? 'border-dark-maroon ring-2 ring-dark-maroon ring-opacity-50 scale-105' 
-                      : 'border-gray-600 hover:border-dark-maroon hover:scale-102'
+                      ? 'border-denim-blue ring-2 ring-denim-blue ring-opacity-50 scale-105 shadow-lg' 
+                      : 'border-gray-600/70 hover:border-denim-blue/70 hover:scale-102'
                   }`}
-                  style={{ minHeight: '100px' }}
+                  style={{ minHeight: '110px' }}
                 >
                   <img 
                     src={img} 
@@ -218,52 +218,52 @@ const ProductPage = () => {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6 lg:space-y-8">
+          <div className="space-y-4 lg:space-y-5">
             <div>
-              <span className="text-gray-300 text-sm font-mono font-medium uppercase tracking-widest">
+              <span className="text-gray-300/80 text-xs md:text-sm font-mono font-medium uppercase tracking-widest">
                 /// {product.category}
               </span>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-street font-bold text-white mt-2 mb-4">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-street font-bold text-white mt-2 mb-3 leading-tight">
                 {product.name}
               </h1>
-              <div className="flex items-center mb-6">
-                <div className="w-16 h-0.5 bg-gray-400"></div>
-                <div className="mx-4 w-2 h-2 bg-gray-400 rotate-45"></div>
-                <div className="w-16 h-0.5 bg-gray-400"></div>
+              <div className="flex items-center mb-4">
+                <div className="w-20 md:w-24 h-[1px] bg-gray-400/60"></div>
+                <div className="mx-5 md:mx-6 w-2.5 h-2.5 bg-gray-400/80 rotate-45"></div>
+                <div className="w-20 md:w-24 h-[1px] bg-gray-400/60"></div>
               </div>
             </div>
 
             {/* Price */}
-            <div className="text-2xl md:text-3xl font-mono font-bold text-white mb-6">
+            <div className="text-2xl md:text-3xl font-mono font-bold text-white mb-4">
               ${product.price} CAD
             </div>
 
             {/* Description */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-street font-bold text-white uppercase tracking-widest">
+            <div className="space-y-2">
+              <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest">
                 /// Description
               </h3>
-              <p className="text-gray-200 text-base md:text-lg font-street font-medium leading-relaxed">
+              <p className="text-gray-200/90 text-sm md:text-base font-street font-medium leading-snug">
                 {product.description}
               </p>
             </div>
 
             {/* Size Display */}
             {product.inStock && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <h3 className="text-lg font-street font-bold text-white uppercase tracking-widest mb-3">
+                  <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest mb-2">
                     /// Size
                   </h3>
-                  <div className="text-2xl text-white font-street font-bold">
+                  <div className="text-xl md:text-2xl text-white font-street font-bold">
                     {product.size || '32"'}
                   </div>
                 </div>
-                <div className="mt-4 p-4 bg-gray-900 border-2 border-gray-600 rounded-none">
-                  <h4 className="text-sm font-street font-bold text-white uppercase tracking-widest mb-2">
+                <div className="mt-3 p-4 bg-gray-900/60 backdrop-blur-sm border-2 border-gray-600/70 rounded-none">
+                  <h4 className="text-xs md:text-sm font-street font-bold text-white uppercase tracking-widest mb-2">
                     /// Size Guide
                   </h4>
-                  <div className="text-sm text-gray-200 font-street font-medium">
+                  <div className="text-xs md:text-sm text-gray-200/90 font-street font-medium">
                     {product.sizeGuide || 'Straight Fit'}
                   </div>
                 </div>
@@ -272,19 +272,19 @@ const ProductPage = () => {
 
             {/* Quantity */}
             {product.inStock && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-street font-bold text-white uppercase tracking-widest mb-3 text-center">
+              <div className="space-y-3">
+                <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest mb-2 text-center">
                   /// Quantity
                 </h3>
                 <div className="flex items-center justify-center gap-4">
                   <button 
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="size-button w-12 h-12 hover:border-gray-300 text-white hover:text-white flex items-center justify-center font-street font-bold transition-all duration-300 hover:bg-gray-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed border-gray-400"
+                    className="size-button w-12 h-12 hover:border-gray-300 text-white hover:text-white flex items-center justify-center font-street font-bold transition-all duration-300 hover:bg-gray-700/80 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed border-gray-400/70"
                     disabled={quantity <= 1}
                   >
                     -
                   </button>
-                  <div className="w-20 h-12 border-2 border-gray-400 flex items-center justify-center bg-luxury-black">
+                  <div className="w-24 h-12 border-2 border-gray-400/70 flex items-center justify-center bg-luxury-black backdrop-blur-sm">
                     <span className="text-xl font-mono font-bold text-white">
                       {quantity}
                     </span>
@@ -292,32 +292,32 @@ const ProductPage = () => {
                   <button 
                     onClick={() => setQuantity(Math.min(10, quantity + 1))}
                     disabled={quantity >= 10}
-                    className="size-button w-12 h-12 hover:border-gray-300 text-white hover:text-white flex items-center justify-center font-street font-bold transition-all duration-300 hover:bg-gray-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed border-gray-400"
+                    className="size-button w-12 h-12 hover:border-gray-300 text-white hover:text-white flex items-center justify-center font-street font-bold transition-all duration-300 hover:bg-gray-700/80 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed border-gray-400/70"
                   >
                     +
                   </button>
                 </div>
-                <p className="text-sm text-gray-400 font-mono font-medium mt-2 text-center">
+                <p className="text-xs text-gray-400/80 font-mono font-medium mt-2 text-center">
                   Max quantity: 10
                 </p>
               </div>
             )}
 
             {/* Add to Cart Button */}
-            <div className="pt-4 space-y-3">
+            <div className="pt-4 space-y-2">
               {!product.inStock ? (
-                <button className="w-full bg-gray-600 text-gray-400 font-street font-bold py-4 px-6 rounded-none uppercase tracking-widest text-lg cursor-not-allowed">
+                <button className="w-full bg-gray-600/50 text-gray-400 font-street font-bold py-3 md:py-4 px-6 rounded-none uppercase tracking-widest text-sm md:text-base cursor-not-allowed border-2 border-gray-600/50">
                   /// Sold Out
                 </button>
               ) : (
                 <>
                   <button 
                     onClick={handleAddToCart}
-                    className="w-full font-street font-bold py-4 px-6 rounded-none transition-all duration-300 transform hover:scale-105 uppercase tracking-widest text-lg border-2 bg-dark-navy hover:bg-dark-maroon text-white border-dark-navy hover:border-dark-maroon shadow-lg hover:shadow-xl hover:shadow-dark-maroon/30"
+                    className="w-full font-street font-bold py-3 md:py-4 px-6 rounded-none transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 uppercase tracking-widest text-sm md:text-base border-2 bg-dark-navy hover:bg-denim-blue text-white border-dark-navy hover:border-denim-blue shadow-lg hover:shadow-xl hover:shadow-denim-blue/30 focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 focus:ring-offset-luxury-black"
                   >
                     /// Add to Cart
                   </button>
-                  <p className="text-sm text-gray-300 font-mono font-medium text-center">
+                  <p className="text-xs text-gray-300/80 font-mono font-medium text-center leading-snug">
                     Ready to add {quantity} × {product.name} (Size: {product.size || '32"'}) to cart
                   </p>
                 </>
@@ -325,14 +325,13 @@ const ProductPage = () => {
             </div>
 
             {/* Product Details */}
-            <div className="space-y-4 pt-6 border-t-2 border-gray-600">
-              <h3 className="text-lg font-street font-bold text-white uppercase tracking-widest">
+            <div className="space-y-2 pt-5 border-t-2 border-gray-600/70">
+              <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest">
                 /// Details
               </h3>
-              <div className="space-y-2 text-gray-200">
-                <p><span className="font-street font-bold text-white">Category:</span> {product.category}</p>
-                <p><span className="font-street font-bold text-white">Availability:</span> {product.inStock ? 'In Stock' : 'Sold Out'}</p>
-                <p><span className="font-street font-bold text-white">SKU:</span> {product.id}</p>
+              <div className="space-y-1.5 text-gray-200/90">
+                <p className="leading-snug text-sm"><span className="font-street font-bold text-white">Category:</span> {product.category}</p>
+                <p className="leading-snug text-sm"><span className="font-street font-bold text-white">Availability:</span> {product.inStock ? 'In Stock' : 'Sold Out'}</p>
               </div>
             </div>
           </div>

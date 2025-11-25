@@ -78,7 +78,7 @@ const NewsletterPopup = () => {
         style={{
           position: 'relative',
           backgroundColor: '#0a0a0a',
-          border: '2px solid #4B1E1E',
+          border: '2px solid #3A2E28',
           borderRadius: '16px',
           padding: '24px',
           width: '320px',
@@ -120,7 +120,7 @@ const NewsletterPopup = () => {
               <div style={{
                 width: '48px',
                 height: '48px',
-                backgroundColor: '#4B1E1E',
+                backgroundColor: '#4A6FA5',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -171,8 +171,14 @@ const NewsletterPopup = () => {
                   outline: 'none',
                   transition: 'border-color 0.3s ease'
                 }}
-                onFocus={(e) => e.target.style.borderColor = '#4B1E1E'}
-                onBlur={(e) => e.target.style.borderColor = '#4b5563'}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#4A6FA5';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(74, 111, 165, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#4b5563';
+                  e.target.style.boxShadow = 'none';
+                }}
                 required
               />
 
@@ -181,13 +187,13 @@ const NewsletterPopup = () => {
                 disabled={isSubmitting}
                 style={{
                   width: '100%',
-                  backgroundColor: '#4B1E1E',
+                  backgroundColor: '#4A6FA5',
                   color: '#ffffff',
                   fontFamily: 'Arial, sans-serif',
                   fontWeight: 'bold',
                   padding: '12px 16px',
                   borderRadius: '8px',
-                  border: '1px solid #4B1E1E',
+                  border: '1px solid #4A6FA5',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   fontSize: '14px',
@@ -198,15 +204,22 @@ const NewsletterPopup = () => {
                 }}
                 onMouseEnter={(e) => {
                   if (!isSubmitting) {
-                    e.target.style.backgroundColor = '#3A1616';
+                    e.target.style.backgroundColor = '#5B7FB8';
                     e.target.style.transform = 'scale(1.05)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isSubmitting) {
-                    e.target.style.backgroundColor = '#4B1E1E';
+                    e.target.style.backgroundColor = '#4A6FA5';
                     e.target.style.transform = 'scale(1)';
                   }
+                }}
+                onFocus={(e) => {
+                  e.target.style.outline = '2px solid #4A6FA5';
+                  e.target.style.outlineOffset = '2px';
+                }}
+                onBlur={(e) => {
+                  e.target.style.outline = 'none';
                 }}
               >
                 {isSubmitting ? 'SUBSCRIBING...' : 'Subscribe & Save 10%'}
