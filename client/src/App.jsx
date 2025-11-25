@@ -15,7 +15,7 @@ const App = () => {
   return (
     <CartProvider>
       <Router>
-        <div className="App min-h-screen bg-luxury-black text-white">
+        <div className="App min-h-screen bg-luxury-black text-white denim-texture">
           <CartIcon />
           <NewsletterPopup />
           <Routes>

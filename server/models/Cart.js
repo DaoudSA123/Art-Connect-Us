@@ -26,20 +26,22 @@ const cartItemSchema = new mongoose.Schema({
     trim: true,
     validate: {
       validator: function(v) {
+        // Allow relative paths (starting with /)
+        if (/^\/.+/.test(v)) {
+          return true;
+        }
         // Allow HTTPS URLs from trusted image sources
         return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(v) || 
                /^https?:\/\/(images\.unsplash\.com|via\.placeholder\.com|picsum\.photos)/i.test(v);
       },
-      message: 'Image must be a valid HTTPS URL from a trusted source'
+      message: 'Image must be a valid HTTPS URL from a trusted source or a relative path'
     }
   },
   size: {
     type: String,
     required: [true, 'Size is required'],
-    enum: {
-      values: ['S', 'M', 'L', 'XL'],
-      message: 'Size must be S, M, L, or XL'
-    }
+    trim: true,
+    maxlength: [20, 'Size cannot exceed 20 characters']
   },
   quantity: {
     type: Number,

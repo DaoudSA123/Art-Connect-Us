@@ -6,9 +6,18 @@ const ProductShowcase = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const sectionRef = useRef(null);
   const navigate = useNavigate();
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     fetchProducts();
@@ -107,96 +116,116 @@ const ProductShowcase = () => {
     <section 
       id="product-showcase"
       ref={sectionRef} 
-      className={`py-24 px-4 bg-luxury-black ${isVisible ? 'fade-in-visible' : 'fade-in-hidden'}`}
+      className={`py-16 md:py-28 lg:py-32 px-4 md:px-6 lg:px-8 bg-luxury-black ${isVisible ? 'fade-in-visible' : 'fade-in-hidden'}`}
     >
       {console.log('ProductShowcase render - isVisible:', isVisible)}
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-20">
-          <div className="inline-block mb-6">
-            <span className="text-gray-300 text-sm font-mono font-medium uppercase tracking-widest">
+        <div className="text-center mb-12 md:mb-20 lg:mb-28">
+          <div className="inline-block mb-4 md:mb-6 lg:mb-8">
+            <span className="text-gray-300/80 text-xs md:text-sm font-mono font-medium uppercase tracking-widest">
               /// COLLECTION
             </span>
           </div>
-          <h2 className="text-6xl md:text-7xl font-street font-bold mb-6 text-white">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-street font-bold mb-4 md:mb-6 lg:mb-8 text-white leading-tight px-2">
            NEWEST DROP
           </h2>
-          <div className="flex items-center justify-center mb-8">
-            <div className="w-16 h-0.5 bg-gray-400"></div>
-            <div className="mx-4 w-2 h-2 bg-gray-400 rotate-45"></div>
-            <div className="w-16 h-0.5 bg-gray-400"></div>
+          <div className="flex items-center justify-center mb-6 md:mb-8 lg:mb-10">
+            <div className="w-16 md:w-20 lg:w-24 h-[1px] bg-gray-400/60"></div>
+            <div className="mx-4 md:mx-5 lg:mx-6 w-2 md:w-2.5 h-2 md:h-2.5 bg-gray-400/80 rotate-45"></div>
+            <div className="w-16 md:w-20 lg:w-24 h-[1px] bg-gray-400/60"></div>
           </div>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto font-street font-medium">
+          <p className="text-gray-400/90 text-sm md:text-base lg:text-lg max-w-2xl mx-auto font-street font-medium leading-relaxed px-4">
             FRESH DROPS. PREMIUM QUALITY. STREET READY.
           </p>
         </div>
 
         {/* Products Grid */}
-        <div className="flex justify-center items-start gap-8">
+        <div className="flex justify-center items-stretch gap-6 md:gap-8 lg:gap-10">
           {products.map((product, index) => (
             <div 
               key={product.id} 
-              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-2 border border-gray-800 hover:border-dark-maroon hover:border-opacity-60 product-card cursor-pointer flex-shrink-0"
+              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-3 border border-gray-800/80 product-card cursor-pointer flex flex-col flex-shrink-0 mx-auto md:mx-0"
+              style={{
+                width: isMobile ? '100%' : '280px',
+                maxWidth: isMobile ? '100%' : '280px'
+              }}
               onClick={() => handleProductClick(product.id)}
             >
               {/* Product Image */}
-              <div className="relative overflow-hidden bg-luxury-black flex items-center justify-center" style={{ minHeight: '280px' }}>
+              <div className="relative overflow-hidden bg-luxury-black flex items-center justify-center h-[280px] md:h-[300px] w-full flex-shrink-0">
                 <img 
                   src={product.image} 
                   alt={product.name}
-                  className="w-full h-auto max-h-80 object-contain group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-auto max-h-[280px] md:max-h-[300px] object-contain group-hover:scale-105 transition-transform duration-500"
                 />
                 
                 {/* Sold Out Overlay */}
                 {!product.inStock && (
-                  <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                    <span className="bg-dark-maroon text-white px-4 py-2 text-sm font-bold uppercase tracking-wider rounded">
+                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
+                    <span className="bg-denim-brown text-white px-5 py-2.5 text-sm font-bold uppercase tracking-wider rounded border border-denim-brown/50">
                       Sold Out
                     </span>
                   </div>
                 )}
-                
-                {/* Quick View Button */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-40">
-                  <button 
-                    className="bg-white text-luxury-black font-semibold py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleProductClick(product.id);
-                    }}
-                  >
-                    Quick View
-                  </button>
-                </div>
               </div>
 
               {/* Product Info */}
-              <div className="p-6 bg-luxury-black">
+              <div className="p-5 md:p-6 lg:p-7 bg-luxury-black flex flex-col" style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', width: '100%' }}>
                 {/* Product Name */}
-                <h3 className="text-lg font-street font-bold uppercase tracking-widest mb-3 text-white group-hover:text-gray-300 transition-colors duration-300">
-                  {product.name}
-                </h3>
+                <div style={{ 
+                  minHeight: '3.5rem',
+                  height: 'auto',
+                  marginBottom: '1rem', 
+                  display: 'flex', 
+                  alignItems: 'flex-start', 
+                  justifyContent: 'center',
+                  width: '100%',
+                  textAlign: 'center'
+                }}>
+                  <h3 className="text-sm md:text-base lg:text-lg font-street font-bold uppercase tracking-widest text-white group-hover:text-gray-300 transition-colors duration-300 leading-tight" style={{ width: '100%' }}>
+                    {product.name}
+                  </h3>
+                </div>
                 
                 {/* Price */}
-                <div className="mb-4">
-                  <span className="text-2xl font-mono font-bold text-white">
+                <div style={{ 
+                  height: '2rem',
+                  minHeight: '2rem',
+                  marginBottom: '1rem', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  width: '100%'
+                }}>
+                  <span className="text-xl md:text-2xl font-mono font-bold text-white">
                     ${product.price} CAD
                   </span>
                 </div>
                 
                 {/* Size Display */}
-                <div className="mb-4">
+                <div style={{ 
+                  minHeight: '3.5rem',
+                  height: 'auto',
+                  marginBottom: '1rem', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  width: '100%',
+                  textAlign: 'center'
+                }}>
                   {!product.inStock ? (
-                    <div className="text-sm text-gray-500 font-mono font-medium uppercase tracking-widest">
+                    <div className="text-xs md:text-sm text-gray-500/80 font-mono font-medium uppercase tracking-widest">
                       /// SOLD OUT
                     </div>
                   ) : (
-                    <div>
-                      <span className="text-xs text-gray-400 font-mono font-medium uppercase tracking-widest mb-2 block">/// SIZE</span>
+                    <div style={{ width: '100%', textAlign: 'center' }}>
+                      <span className="text-xs text-gray-400/80 font-mono font-medium uppercase tracking-widest mb-2 block">/// SIZE</span>
                       <div className="text-base font-street font-bold text-white">
                         {product.size || '32"'}
                       </div>
-                      <div className="text-xs text-gray-400 font-mono font-medium mt-1">
+                      <div className="text-xs text-gray-400/70 font-mono font-medium mt-1.5">
                         {product.sizeGuide || 'Straight Fit'}
                       </div>
                     </div>
@@ -205,8 +234,9 @@ const ProductShowcase = () => {
                 
                 {/* Add to Cart Button */}
                 <button 
-                  className="w-full bg-dark-navy hover:bg-dark-maroon text-white font-street font-bold py-3 px-4 rounded-none transition-all duration-300 transform hover:scale-105 border border-dark-navy hover:border-dark-maroon uppercase tracking-widest text-sm"
+                  className="w-full bg-dark-navy hover:bg-denim-blue text-white font-street font-bold py-3 md:py-3.5 px-4 rounded-none transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 border border-dark-navy hover:border-denim-blue uppercase tracking-widest text-xs md:text-sm shadow-md hover:shadow-lg hover:shadow-denim-blue/30 focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2"
                   onClick={(e) => handleAddToCart(product, e)}
+                  style={{ marginTop: 'auto', width: '100%' }}
                 >
                   {!product.inStock ? '/// NOTIFY' : '/// ADD TO CART'}
                 </button>
