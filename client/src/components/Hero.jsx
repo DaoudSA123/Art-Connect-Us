@@ -14,7 +14,7 @@ const Hero = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat hero-bg-zoom"
         style={{
-          backgroundImage: "url('/images/ACU SHOOT E/_DSF3259.jpg')"
+          backgroundImage: "url('/_DSF3259%20(1).jpg')"
         }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
@@ -30,13 +30,14 @@ const Hero = () => {
         
         <div className="mb-0 animate-fade-in flex justify-center" style={{ marginBottom: '-12px' }}>
           <img 
-            src="/images/logo.png" 
+            src="/IMG_5308-removebg-preview.png" 
             alt="Art Connect Us" 
             style={{
               maxWidth: '100%',
               height: 'auto',
               maxHeight: '600px',
               objectFit: 'contain',
+              backgroundColor: 'transparent',
               filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3))'
             }}
           />
