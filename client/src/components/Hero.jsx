@@ -1,6 +1,13 @@
 import React from 'react';
 
 const Hero = () => {
+  const handleShopDropClick = () => {
+    const productSection = document.getElementById('product-showcase');
+    if (productSection) {
+      productSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -42,10 +49,13 @@ const Hero = () => {
         </div>
         
         <p className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-10 md:mb-12 max-w-2xl mx-auto font-street font-medium animate-slide-up leading-relaxed tracking-wide">
-          ART CONNECT US.
+          MEMBERS ONLY
         </p>
         
-        <button className="bg-dark-navy hover:bg-denim-blue text-white font-street font-bold py-4 md:py-5 px-10 md:px-12 rounded-none border-2 border-dark-navy hover:border-denim-blue transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 uppercase tracking-widest text-base md:text-lg animate-slide-up shadow-lg hover:shadow-xl hover:shadow-denim-blue/30 focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 focus:ring-offset-luxury-black">
+        <button 
+          onClick={handleShopDropClick}
+          className="bg-dark-navy hover:bg-denim-blue text-white font-street font-bold py-4 md:py-5 px-10 md:px-12 rounded-none border-2 border-dark-navy hover:border-denim-blue transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 uppercase tracking-widest text-base md:text-lg animate-slide-up shadow-lg hover:shadow-xl hover:shadow-denim-blue/30 focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 focus:ring-offset-luxury-black cursor-pointer"
+        >
           /// SHOP DROP
         </button>
       </div>

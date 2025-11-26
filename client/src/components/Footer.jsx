@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useScrollAnimation from '../hooks/useScrollAnimation';
+import ContactForm from './ContactForm';
 
-const Footer = () => {
+const Footer = ({ isContactFormOpen: externalIsOpen, setIsContactFormOpen: externalSetIsOpen }) => {
   const [footerRef, footerVisible] = useScrollAnimation(0.1);
+  // Use external state if provided, otherwise use internal state
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isContactFormOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsContactFormOpen = externalSetIsOpen !== undefined ? externalSetIsOpen : setInternalIsOpen;
 
   return (
     <footer 
@@ -48,12 +53,12 @@ const Footer = () => {
             <h4 className="text-xs md:text-sm font-street font-bold uppercase tracking-widest text-gray-400/70 mb-4">
               Get In Touch
             </h4>
-            <a 
-              href="mailto:contact@artconnectus.com" 
-              className="bg-denim-blue text-white font-street font-bold px-6 py-2.5 hover:bg-denim-blue-light transition-all duration-300 uppercase tracking-wider text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 inline-block"
+            <button 
+              onClick={() => setIsContactFormOpen(true)}
+              className="bg-denim-blue text-white font-street font-bold px-6 py-2.5 hover:bg-denim-blue-light transition-all duration-300 uppercase tracking-wider text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 inline-block cursor-pointer"
             >
               Contact
-            </a>
+            </button>
           </div>
 
           {/* Right: Newsletter Signup */}
@@ -83,6 +88,7 @@ const Footer = () => {
           </p>
         </div>
       </div>
+      <ContactForm isOpen={isContactFormOpen} onClose={() => setIsContactFormOpen(false)} />
     </footer>
   );
 };
