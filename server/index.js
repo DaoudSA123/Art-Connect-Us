@@ -99,7 +99,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           if (cart && cart.items.length > 0) {
             // Calculate shipping and tax
             const shipping = 10.00;
-            const tax = cart.total * 0.08;
+            const tax = cart.total * 0.15;
             
             // Create order
             await Order.createFromStripeSession(

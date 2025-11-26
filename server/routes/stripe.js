@@ -28,7 +28,7 @@ router.post('/create-checkout-session', async (req, res) => {
     // Calculate totals
     const subtotal = cart.total;
     const shipping = 10.00; // $10 CAD
-    const tax = subtotal * 0.08; // 8% tax
+    const tax = subtotal * 0.15; // 15% tax
     const total = subtotal + shipping + tax;
 
     // Build line items for Stripe
