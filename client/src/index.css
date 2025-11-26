@@ -820,7 +820,7 @@ html, body {
   
   /* Zoom in hero background image on mobile */
   .hero-bg-zoom {
-    transform: scale(1.15);
+    transform: scale(1.4);
     transform-origin: center center;
   }
 }
