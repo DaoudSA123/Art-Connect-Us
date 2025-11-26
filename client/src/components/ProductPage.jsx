@@ -19,6 +19,17 @@ const ProductPage = () => {
     fetchProduct();
   }, [id]);
 
+  useEffect(() => {
+    if (product) {
+      // Initialize selected size when product loads
+      if (product.availableSizes && product.availableSizes.length > 0) {
+        setSelectedSize(product.availableSizes[0]);
+      } else {
+        setSelectedSize(product.size || '32"');
+      }
+    }
+  }, [product]);
+
   const fetchProduct = async () => {
     try {
       const response = await fetch(`http://localhost:5000/api/products/${id}`);
@@ -40,8 +51,13 @@ const ProductPage = () => {
   };
 
   const handleAddToCart = async () => {
-    // For single size products, use the product's size
-    const size = product.size || '32"';
+    // Use selectedSize if available, otherwise fall back to product.size
+    const size = selectedSize || product.size || '32"';
+    
+    if (!size) {
+      alert('Please select a size');
+      return;
+    }
     
     if (quantity > 10) {
       alert('Maximum quantity is 10');
@@ -170,7 +186,7 @@ const ProductPage = () => {
       </div>
 
       {/* Product Content */}
-      <div className="max-w-7xl mx-auto py-6 md:py-10 px-6 md:px-8">
+      <div className="max-w-7xl mx-auto py-6 md:py-10 px-6 md:px-8 pb-16 md:pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Image */}
           <div className="space-y-3">
@@ -218,7 +234,7 @@ const ProductPage = () => {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-4 lg:space-y-5">
+          <div className="space-y-6">
             <div>
               <span className="text-gray-300/80 text-xs md:text-sm font-mono font-medium uppercase tracking-widest">
                 /// {product.category}
@@ -226,7 +242,7 @@ const ProductPage = () => {
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-street font-bold text-white mt-2 mb-3 leading-tight">
                 {product.name}
               </h1>
-              <div className="flex items-center mb-4">
+              <div className="flex items-center">
                 <div className="w-20 md:w-24 h-[1px] bg-gray-400/60"></div>
                 <div className="mx-5 md:mx-6 w-2.5 h-2.5 bg-gray-400/80 rotate-45"></div>
                 <div className="w-20 md:w-24 h-[1px] bg-gray-400/60"></div>
@@ -234,7 +250,7 @@ const ProductPage = () => {
             </div>
 
             {/* Price */}
-            <div className="text-2xl md:text-3xl font-mono font-bold text-white mb-4">
+            <div className="text-2xl md:text-3xl font-mono font-bold text-white">
               ${product.price} CAD
             </div>
 
@@ -250,16 +266,53 @@ const ProductPage = () => {
 
             {/* Size Display */}
             {product.inStock && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest mb-2">
+                  <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest mb-4">
                     /// Size
                   </h3>
-                  <div className="text-xl md:text-2xl text-white font-street font-bold">
-                    {product.size || '32"'}
-                  </div>
+                  {product.availableSizes && product.availableSizes.length > 0 ? (
+                    <div 
+                      className="flex flex-row flex-wrap" 
+                      style={{ 
+                        gap: '12px',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        marginBottom: '16px'
+                      }}
+                    >
+                      {product.availableSizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedSize(size);
+                          }}
+                          className={`size-button font-street font-bold transition-all duration-300 ${
+                            selectedSize === size
+                              ? 'selected bg-denim-brown border-denim-blue text-white shadow-md'
+                              : 'bg-luxury-black border-gray-600/70 text-gray-300 hover:border-gray-400 hover:text-white'
+                          } border-2 uppercase tracking-wider cursor-pointer`}
+                          style={{ 
+                            padding: '12px 24px',
+                            fontSize: '16px',
+                            minWidth: '90px',
+                            textAlign: 'center',
+                            display: 'inline-block'
+                          }}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xl md:text-2xl text-white font-street font-bold">
+                      {product.size || '32"'}
+                    </div>
+                  )}
                 </div>
-                <div className="mt-3 p-4 bg-gray-900/60 backdrop-blur-sm border-2 border-gray-600/70 rounded-none">
+                <div className="p-4 bg-gray-900/60 backdrop-blur-sm border-2 border-gray-600/70 rounded-none">
                   <h4 className="text-xs md:text-sm font-street font-bold text-white uppercase tracking-widest mb-2">
                     /// Size Guide
                   </h4>
@@ -273,7 +326,7 @@ const ProductPage = () => {
             {/* Quantity */}
             {product.inStock && (
               <div className="space-y-3">
-                <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest mb-2 text-center">
+                <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest text-center">
                   /// Quantity
                 </h3>
                 <div className="flex items-center justify-center gap-4">
@@ -297,43 +350,27 @@ const ProductPage = () => {
                     +
                   </button>
                 </div>
-                <p className="text-xs text-gray-400/80 font-mono font-medium mt-2 text-center">
-                  Max quantity: 10
-                </p>
               </div>
             )}
 
             {/* Add to Cart Button */}
-            <div className="pt-4 space-y-2">
+            <div className="mb-12 md:mb-0">
               {!product.inStock ? (
                 <button className="w-full bg-gray-600/50 text-gray-400 font-street font-bold py-3 md:py-4 px-6 rounded-none uppercase tracking-widest text-sm md:text-base cursor-not-allowed border-2 border-gray-600/50">
                   /// Sold Out
                 </button>
               ) : (
-                <>
-                  <button 
-                    onClick={handleAddToCart}
-                    className="w-full font-street font-bold py-3 md:py-4 px-6 rounded-none transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 uppercase tracking-widest text-sm md:text-base border-2 bg-dark-navy hover:bg-denim-blue text-white border-dark-navy hover:border-denim-blue shadow-lg hover:shadow-xl hover:shadow-denim-blue/30 focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 focus:ring-offset-luxury-black"
-                  >
-                    /// Add to Cart
-                  </button>
-                  <p className="text-xs text-gray-300/80 font-mono font-medium text-center leading-snug">
-                    Ready to add {quantity} × {product.name} (Size: {product.size || '32"'}) to cart
-                  </p>
-                </>
+                <button 
+                  onClick={handleAddToCart}
+                  className="w-full font-street font-bold py-3 md:py-4 px-6 rounded-none transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 uppercase tracking-widest text-sm md:text-base border-2 bg-dark-navy hover:bg-denim-blue text-white border-dark-navy hover:border-denim-blue shadow-lg hover:shadow-xl hover:shadow-denim-blue/30 focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 focus:ring-offset-luxury-black"
+                >
+                  /// Add to Cart
+                </button>
               )}
             </div>
 
             {/* Product Details */}
-            <div className="space-y-2 pt-5 border-t-2 border-gray-600/70">
-              <h3 className="text-sm md:text-base font-street font-bold text-white uppercase tracking-widest">
-                /// Details
-              </h3>
-              <div className="space-y-1.5 text-gray-200/90">
-                <p className="leading-snug text-sm"><span className="font-street font-bold text-white">Category:</span> {product.category}</p>
-                <p className="leading-snug text-sm"><span className="font-street font-bold text-white">Availability:</span> {product.inStock ? 'In Stock' : 'Sold Out'}</p>
-              </div>
-            </div>
+        
           </div>
         </div>
       </div>

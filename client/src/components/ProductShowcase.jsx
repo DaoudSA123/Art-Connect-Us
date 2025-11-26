@@ -8,6 +8,7 @@ const ProductShowcase = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [visibleCards, setVisibleCards] = useState(new Set());
+  const [selectedSizes, setSelectedSizes] = useState({});
   const sectionRef = useRef(null);
   const cardRefs = useRef({});
   const navigate = useNavigate();
@@ -106,6 +107,14 @@ const ProductShowcase = () => {
       const response = await fetch('http://localhost:5000/api/products');
       const data = await response.json();
       setProducts(data);
+      // Initialize selected sizes for products with availableSizes
+      const initialSizes = {};
+      data.forEach(product => {
+        if (product.availableSizes && product.availableSizes.length > 0) {
+          initialSizes[product.id] = product.availableSizes[0];
+        }
+      });
+      setSelectedSizes(initialSizes);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -125,14 +134,22 @@ const ProductShowcase = () => {
       return;
     }
 
-    // For single size products, use the product's size
-    const size = product.size || '32"';
+    // Use selected size if available, otherwise use product's size
+    const size = selectedSizes[product.id] || product.size || '32"';
     const success = await addToCart(product, size, 1);
     if (success) {
       alert(`Added ${product.name} (Size: ${size}) to cart!`);
     } else {
       alert('Failed to add item to cart. Please try again.');
     }
+  };
+
+  const handleSizeSelect = (productId, size, e) => {
+    e.stopPropagation();
+    setSelectedSizes(prev => ({
+      ...prev,
+      [productId]: size
+    }));
   };
 
   if (loading) {
@@ -171,9 +188,7 @@ const ProductShowcase = () => {
             <div className="mx-4 md:mx-5 lg:mx-6 w-2 md:w-2.5 h-2 md:h-2.5 bg-gray-400/80 rotate-45"></div>
             <div className="w-16 md:w-20 lg:w-24 h-[1px] bg-gray-400/60"></div>
           </div>
-          <p className="text-gray-400/90 text-sm md:text-base lg:text-lg max-w-2xl mx-auto font-street font-medium leading-relaxed px-4">
-            FRESH DROPS. PREMIUM QUALITY. STREET READY.
-          </p>
+         
         </div>
 
         {/* Products Grid */}
@@ -257,6 +272,28 @@ const ProductShowcase = () => {
                   {!product.inStock ? (
                     <div className="text-xs md:text-sm text-gray-500/80 font-mono font-medium uppercase tracking-widest">
                       /// SOLD OUT
+                    </div>
+                  ) : product.availableSizes && product.availableSizes.length > 0 ? (
+                    <div style={{ width: '100%' }}>
+                      <span className="text-xs text-gray-400/80 font-mono font-medium uppercase tracking-widest mb-2 block">/// SIZE</span>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {product.availableSizes.map((size) => (
+                          <button
+                            key={size}
+                            onClick={(e) => handleSizeSelect(product.id, size, e)}
+                            className={`size-button px-4 py-2 text-xs md:text-sm font-street font-bold transition-all duration-300 ${
+                              selectedSizes[product.id] === size
+                                ? 'selected bg-denim-brown border-denim-blue text-white'
+                                : 'bg-luxury-black border-gray-600/70 text-gray-300 hover:border-gray-400 hover:text-white'
+                            } border-2 uppercase tracking-wider cursor-pointer`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="text-xs text-gray-400/70 font-mono font-medium mt-2">
+                        {product.sizeGuide || 'Straight Fit'}
+                      </div>
                     </div>
                   ) : (
                     <div style={{ width: '100%', textAlign: 'center' }}>

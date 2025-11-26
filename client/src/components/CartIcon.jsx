@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 
-const CartIcon = () => {
+const CartIcon = ({ isContactFormOpen = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { getCartItemCount } = useCart();
@@ -21,8 +21,8 @@ const CartIcon = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Hide cart icon when on cart page
-  if (location.pathname === '/cart') {
+  // Hide cart icon when on cart page or when contact form is open
+  if (location.pathname === '/cart' || isContactFormOpen) {
     return null;
   }
 

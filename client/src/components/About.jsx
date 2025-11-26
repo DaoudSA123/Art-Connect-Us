@@ -1,10 +1,11 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import useScrollAnimation from '../hooks/useScrollAnimation';
 
 const About = () => {
   const [contentRef, contentVisible] = useScrollAnimation(0.2);
   const [imageRef, imageVisible] = useScrollAnimation(0.3);
   const videoRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -14,23 +15,37 @@ const About = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <section className="py-28 md:py-32 px-6 md:px-8 bg-luxury-black">
+    <section 
+      className="px-6 md:px-8 bg-luxury-black"
+      style={{ 
+        paddingTop: isMobile ? '7rem' : '8rem',
+        paddingBottom: isMobile ? '2rem' : '8rem'
+      }}
+    >
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-16 items-center">
+        <div 
+          className="grid grid-cols-1 lg:grid-cols-2 items-center"
+          style={{ 
+            gap: isMobile ? '0' : window.innerWidth >= 1024 ? '4rem' : '2rem'
+          }}
+        >
           {/* Content */}
           <div 
             ref={contentRef} 
             className={`space-y-7 ${contentVisible ? 'fade-in-left visible' : 'fade-in-left'}`}
+            style={{ marginBottom: isMobile ? '-1.5rem' : '0' }}
           >
-            <div className="mb-7">
-              <span className="text-gray-300/80 text-xs md:text-sm font-mono font-medium uppercase tracking-widest">
-                /// OUR STORY
-              </span>
-            </div>
-            
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-street font-bold text-white leading-tight">
-              ITS US
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-street font-bold text-white leading-tight mb-7">
+              IT'S US
             </h2>
             
             <div className="flex items-center mb-9">
@@ -53,26 +68,18 @@ const About = () => {
               </p>
             </div>
             
-            <div className="flex flex-wrap gap-8 pt-8">
-              <div className="text-center">
-                <div className="text-4xl md:text-5xl font-mono font-bold text-white mb-2">5+</div>
-                <div className="text-xs md:text-sm text-gray-400/80 font-mono font-medium uppercase tracking-widest">/// YEARS</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl md:text-5xl font-mono font-bold text-white mb-2">10K+</div>
-                <div className="text-xs md:text-sm text-gray-400/80 font-mono font-medium uppercase tracking-widest">/// FAM</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl md:text-5xl font-mono font-bold text-white mb-2">100%</div>
-                <div className="text-xs md:text-sm text-gray-400/80 font-mono font-medium uppercase tracking-widest">/// REAL</div>
-              </div>
-            </div>
+            
           </div>
           
           {/* Video */}
           <div 
             ref={imageRef} 
             className={`relative ${imageVisible ? 'fade-in-right visible' : 'fade-in-right'}`}
+            style={{ 
+              marginTop: isMobile ? '-6rem' : '0',
+              marginBottom: isMobile ? '-2rem' : '0',
+              overflow: 'hidden'
+            }}
           >
             <video 
               ref={videoRef}

@@ -167,7 +167,7 @@ const products = [
     images: [
       "/thumbnail_jeanfront.png",
       "/thumbnail_jeanback.png",
-      "/thumbnail_IMG_0566.jpg",
+      "/images/ACU SHOOT E/_DSF3036-2.jpg",
       "/thumbnail_IMG_0565.jpg"
     ],
     category: "Jeans",
@@ -178,16 +178,19 @@ const products = [
   },
   {
     id: 2,
-    name: "Double Waist",
+    name: "Double Waist Jeans",
     price: 79.99,
     image: "/images/39e15cc1-5a9e-4e69-851c-9094f858ace4.png.PNG",
     images: [
       "/images/39e15cc1-5a9e-4e69-851c-9094f858ace4.png.PNG",
-      "/images/8b7461a0-074d-4cda-b928-2c006924a772.png.PNG"
+      "/images/8b7461a0-074d-4cda-b928-2c006924a772.png.PNG",
+      "/_DSF2283.JPG",
+      "/_DSF2313.JPG"
     ],
     category: "Jeans",
-    description: "Unique double waist design with premium straight fit. One size 36\" waist available.",
+    description: "Unique double waist design with premium straight fit. Available in 32\" and 36\" waist sizes.",
     size: "36\"",
+    availableSizes: ["32\"", "36\""],
     sizeGuide: "Straight Fit",
     inStock: true
   }
