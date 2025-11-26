@@ -8,6 +8,7 @@ require('dotenv').config();
 const connectDB = require('./config/connectDB');
 const cartRoutes = require('./routes/cart');
 const newsletterRoutes = require('./routes/newsletter');
+const stripeRoutes = require('./routes/stripe');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,14 +21,14 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://checkout.stripe.com"],
+      scriptSrc: ["'self'", "https://js.stripe.com"],
+      imgSrc: ["'self'", "data:", "https:", "https://*.stripe.com"],
+      connectSrc: ["'self'", "https://api.stripe.com", "https://checkout.stripe.com"],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
+      frameSrc: ["https://checkout.stripe.com", "https://js.stripe.com"],
     },
   },
   crossOriginEmbedderPolicy: false
@@ -57,6 +58,94 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// IMPORTANT: Stripe webhook route must be BEFORE body parsing middleware
+// This is because Stripe needs the raw body for signature verification
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+  const Cart = require('./models/Cart');
+  const Order = require('./models/Order');
+  
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object;
+        console.log('Payment successful for session:', session.id);
+        
+        // Retrieve full session details
+        const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+          expand: ['line_items']
+        });
+
+        // Get cart items from metadata
+        if (session.metadata?.cartSessionId) {
+          const cart = await Cart.findOne({ sessionId: session.metadata.cartSessionId });
+          
+          if (cart && cart.items.length > 0) {
+            // Calculate shipping and tax
+            const shipping = 10.00;
+            const tax = cart.total * 0.15;
+            
+            // Create order
+            await Order.createFromStripeSession(
+              fullSession,
+              cart.items,
+              shipping,
+              tax
+            );
+
+            // Clear the cart after successful order
+            await cart.clearCart();
+            console.log('Order created and cart cleared for session:', session.metadata.cartSessionId);
+          }
+        }
+        break;
+
+      case 'payment_intent.succeeded':
+        console.log('PaymentIntent succeeded:', event.data.object.id);
+        const paymentIntent = event.data.object;
+        if (paymentIntent.metadata?.orderId) {
+          await Order.findByIdAndUpdate(paymentIntent.metadata.orderId, {
+            paymentStatus: 'paid'
+          });
+        }
+        break;
+
+      case 'payment_intent.payment_failed':
+        console.log('PaymentIntent failed:', event.data.object.id);
+        const failedPayment = event.data.object;
+        if (failedPayment.metadata?.orderId) {
+          await Order.findByIdAndUpdate(failedPayment.metadata.orderId, {
+            paymentStatus: 'failed'
+          });
+        }
+        break;
+
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Error processing webhook:', error);
+    res.status(500).json({ error: 'Webhook processing failed' });
+  }
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -107,6 +196,7 @@ const products = [
 // Routes
 app.use('/api/cart', cartRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 app.get('/api/products', (req, res) => {
   res.json(products);

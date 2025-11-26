@@ -31,9 +31,42 @@ const CartPage = () => {
     }, 100);
   };
 
-  const handleCheckout = () => {
-    // TODO: Integrate with Stripe
-    alert('Checkout functionality will be integrated with Stripe soon!');
+  const handleCheckout = async () => {
+    try {
+      // Get sessionId from localStorage (same one used in CartContext)
+      const sessionId = localStorage.getItem('acu-session-id');
+      
+      if (!sessionId) {
+        alert('Unable to process checkout. Please try again.');
+        return;
+      }
+
+      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      
+      const response = await fetch(`${API_BASE}/stripe/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId: sessionId,
+          successUrl: `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/cart`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        alert(data.message || 'Failed to create checkout session. Please try again.');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('An error occurred during checkout. Please try again.');
+    }
   };
 
   const handleRemoveItem = async (productId, size) => {
@@ -65,7 +98,7 @@ const CartPage = () => {
 
   const subtotal = getCartTotal();
   const shipping = subtotal > 0 ? 10 : 0; // $10 shipping
-  const tax = subtotal * 0.08; // 8% tax
+  const tax = subtotal * 0.15; // 15% tax
   const total = subtotal + shipping + tax;
 
   if (loading) {
