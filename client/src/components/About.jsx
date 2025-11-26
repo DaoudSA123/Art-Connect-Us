@@ -30,7 +30,7 @@ const About = () => {
             </div>
             
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-street font-bold text-white leading-tight">
-              STREET ROOTS
+              ITS US
             </h2>
             
             <div className="flex items-center mb-9">
@@ -41,15 +41,15 @@ const About = () => {
             
             <div className="space-y-5 text-gray-300/90 text-base md:text-lg font-street font-medium leading-relaxed">
               <p>
-                BORN FROM THE STREETS. BUILT FOR THE CULTURE. WE DON'T FOLLOW TRENDS - WE CREATE THEM.
+                UNLEASHING A SOURCE OF ART TO CONNECT US. THIS IS WHO WE ARE. WE DON'T FOLLOW TRENDS, WE CREATE THEM.
               </p>
               
               <p>
-                EVERY PIECE TELLS A STORY. EVERY DROP IS A STATEMENT. FROM THE BLOCK TO THE RUNWAY.
+                EVERY PIECE IS US. EVERY DROP IS OUR STATEMENT.
               </p>
               
               <p>
-                AUTHENTIC. RAW. UNCOMPROMISING. THIS IS MORE THAN CLOTHING - IT'S A MOVEMENT.
+                AUTHENTIC. RAW. UNCOMPROMISING. THIS IS US, AND THIS IS OUR MOVEMENT.
               </p>
             </div>
             

@@ -7,7 +7,9 @@ const ProductShowcase = () => {
   const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [visibleCards, setVisibleCards] = useState(new Set());
   const sectionRef = useRef(null);
+  const cardRefs = useRef({});
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
@@ -22,6 +24,40 @@ const ProductShowcase = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Individual scroll observers for each product card
+  useEffect(() => {
+    if (products.length === 0) return;
+
+    const observers = [];
+
+    products.forEach((product) => {
+      const cardElement = cardRefs.current[product.id];
+      if (!cardElement) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setVisibleCards((prev) => new Set([...prev, product.id]));
+            observer.unobserve(cardElement);
+          }
+        },
+        {
+          threshold: 0.1,
+          rootMargin: '0px 0px -50px 0px'
+        }
+      );
+
+      observer.observe(cardElement);
+      observers.push({ observer, element: cardElement });
+    });
+
+    return () => {
+      observers.forEach(({ observer, element }) => {
+        observer.unobserve(element);
+      });
+    };
+  }, [products]);
 
   useEffect(() => {
     // Fallback: if IntersectionObserver is not supported, make visible immediately
@@ -145,7 +181,10 @@ const ProductShowcase = () => {
           {products.map((product, index) => (
             <div 
               key={product.id} 
-              className="group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-3 border border-gray-800/80 product-card cursor-pointer flex flex-col flex-shrink-0 mx-auto md:mx-0"
+              ref={(el) => {
+                if (el) cardRefs.current[product.id] = el;
+              }}
+              className={`group bg-luxury-black rounded-lg overflow-hidden hover:shadow-xl hover:shadow-dark-maroon/30 transition-all duration-500 transform hover:-translate-y-3 border border-gray-800/80 product-card cursor-pointer flex flex-col flex-shrink-0 mx-auto md:mx-0 ${visibleCards.has(product.id) ? 'visible' : ''}`}
               style={{
                 width: isMobile ? '100%' : '280px',
                 maxWidth: isMobile ? '100%' : '280px'

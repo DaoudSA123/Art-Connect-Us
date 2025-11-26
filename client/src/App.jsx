@@ -7,6 +7,7 @@ import About from './components/About.jsx';
 import Footer from './components/Footer.jsx';
 import ProductPage from './components/ProductPage.jsx';
 import CartPage from './components/CartPage.jsx';
+import CheckoutSuccess from './components/CheckoutSuccess.jsx';
 import CartIcon from './components/CartIcon.jsx';
 import NewsletterPopup from './components/NewsletterPopup.jsx';
 import { CartProvider } from './contexts/CartContext.jsx';
@@ -29,6 +30,7 @@ const App = () => {
             } />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
           </Routes>
         </div>
       </Router>

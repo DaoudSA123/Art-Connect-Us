@@ -6,8 +6,16 @@ const NewsletterPopup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
-  // Show popup after 3 seconds on first visit
+  // Show popup after 3 seconds on first visit (only if not dismissed before)
   useEffect(() => {
+    // Check if popup has been dismissed before
+    const hasBeenDismissed = localStorage.getItem('acu-newsletter-popup-seen');
+    
+    if (hasBeenDismissed === 'true') {
+      console.log('NewsletterPopup: Already dismissed, not showing');
+      return;
+    }
+    
     console.log('NewsletterPopup: Component mounted, setting timer...');
     const timer = setTimeout(() => {
       console.log('NewsletterPopup: Timer fired, setting visible to true');
