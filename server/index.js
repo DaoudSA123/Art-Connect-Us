@@ -167,7 +167,7 @@ const products = [
     images: [
       "/thumbnail_jeanfront.png",
       "/thumbnail_jeanback.png",
-      "/images/ACU SHOOT E/_DSF3036-2.jpg",
+      "/images/_DSF3036-2.jpg",
       "/thumbnail_IMG_0565.jpg"
     ],
     category: "Jeans",
