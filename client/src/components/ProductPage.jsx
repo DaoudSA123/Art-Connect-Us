@@ -32,7 +32,18 @@ const ProductPage = () => {
 
   const fetchProduct = async () => {
     try {
-      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      // Use relative path in production, localhost in development
+      let API_BASE;
+      if (process.env.NODE_ENV === 'production') {
+        API_BASE = '/api';
+      } else {
+        const envUrl = process.env.REACT_APP_API_URL;
+        if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
+          API_BASE = envUrl;
+        } else {
+          API_BASE = 'http://localhost:5000/api';
+        }
+      }
       const response = await fetch(`${API_BASE}/products/${id}`);
       if (response.ok) {
         const data = await response.json();

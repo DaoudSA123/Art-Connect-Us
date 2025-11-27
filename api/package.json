@@ -1,0 +1,11 @@
+{
+  "name": "acu-api",
+  "version": "1.0.0",
+  "description": "ACU API serverless functions",
+  "main": "index.js",
+  "dependencies": {
+    "mongoose": "^8.19.2",
+    "stripe": "^20.0.0"
+  }
+}
+
