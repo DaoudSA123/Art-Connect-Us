@@ -9,7 +9,7 @@
     "client": "cd client && npm start",
     "build": "cd client && npm install && npm run build",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
-    "vercel-build": "cd client && npm install && npm run build"
+    "vercel-build": "npm install --prefix client && npm run build --prefix client"
   },
   "keywords": [
     "ecommerce",
