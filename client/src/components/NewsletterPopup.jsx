@@ -39,9 +39,12 @@ const NewsletterPopup = () => {
     setIsSubmitting(true);
     
     try {
-      // Use relative path in production, localhost in development
+      // Use relative path in production (Vercel), localhost in development
+      const isProduction = process.env.NODE_ENV === 'production' || 
+                          window.location.hostname !== 'localhost';
+      
       let API_BASE;
-      if (process.env.NODE_ENV === 'production') {
+      if (isProduction) {
         API_BASE = '/api';
       } else {
         const envUrl = process.env.REACT_APP_API_URL;

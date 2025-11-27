@@ -104,10 +104,13 @@ const ProductShowcase = () => {
 
   const fetchProducts = async () => {
     try {
-      // Use relative path in production, localhost in development
-      // Only use REACT_APP_API_URL if it's a valid URL (starts with http or /)
+      // Use relative path in production (Vercel), localhost in development
+      // Check if we're on localhost or a Vercel domain
+      const isProduction = process.env.NODE_ENV === 'production' || 
+                          window.location.hostname !== 'localhost';
+      
       let API_BASE;
-      if (process.env.NODE_ENV === 'production') {
+      if (isProduction) {
         API_BASE = '/api';
       } else {
         const envUrl = process.env.REACT_APP_API_URL;

@@ -27,9 +27,13 @@ export const CartProvider = ({ children }) => {
   const [sessionId] = useState(() => generateSessionId());
 
   // API base URL - use relative path for Vercel, localhost for development
-  // Only use REACT_APP_API_URL if it's a valid URL (starts with http or /)
+  // Check if we're on localhost or a Vercel domain
+  const isProduction = typeof window !== 'undefined' && 
+                      (process.env.NODE_ENV === 'production' || 
+                       window.location.hostname !== 'localhost');
+  
   let API_BASE;
-  if (process.env.NODE_ENV === 'production') {
+  if (isProduction) {
     API_BASE = '/api';
   } else {
     const envUrl = process.env.REACT_APP_API_URL;
