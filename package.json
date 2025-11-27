@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
-    "mongoose": "^9.0.0",
+    "mongoose": "^8.19.2",
     "stripe": "^20.0.0"
   }
 }
