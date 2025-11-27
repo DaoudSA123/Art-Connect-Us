@@ -23,6 +23,8 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
-    "@imgly/background-removal": "^1.7.0"
+    "@imgly/background-removal": "^1.7.0",
+    "mongoose": "^9.0.0",
+    "stripe": "^20.0.0"
   }
 }

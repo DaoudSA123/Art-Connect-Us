@@ -104,9 +104,37 @@ const ProductShowcase = () => {
 
   const fetchProducts = async () => {
     try {
-      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      // Use relative path in production, localhost in development
+      // Only use REACT_APP_API_URL if it's a valid URL (starts with http or /)
+      let API_BASE;
+      if (process.env.NODE_ENV === 'production') {
+        API_BASE = '/api';
+      } else {
+        const envUrl = process.env.REACT_APP_API_URL;
+        if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
+          API_BASE = envUrl;
+        } else {
+          API_BASE = 'http://localhost:5000/api';
+        }
+      }
+      console.log('Fetching products from:', `${API_BASE}/products`);
       const response = await fetch(`${API_BASE}/products`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('Products fetched successfully:', data);
+      
+      // Ensure data is an array
+      if (!Array.isArray(data)) {
+        console.error('Products data is not an array:', data);
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+      
       setProducts(data);
       // Initialize selected sizes for products with availableSizes
       const initialSizes = {};
@@ -119,7 +147,10 @@ const ProductShowcase = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
+      console.error('API_BASE was:', process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
       setLoading(false);
+      // Set empty products array so it doesn't show loading forever
+      setProducts([]);
     }
   };
 
@@ -194,7 +225,7 @@ const ProductShowcase = () => {
 
         {/* Products Grid */}
         <div className="flex justify-center items-stretch gap-6 md:gap-8 lg:gap-10">
-          {products.map((product, index) => (
+          {Array.isArray(products) && products.length > 0 ? products.map((product, index) => (
             <div 
               key={product.id} 
               ref={(el) => {
@@ -319,7 +350,12 @@ const ProductShowcase = () => {
                 </button>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="text-center py-12">
+              <p className="text-gray-400">No products available at the moment.</p>
+              <p className="text-gray-500 text-sm mt-2">Please check back later.</p>
+            </div>
+          )}
         </div>
 
         {/* View All Section */}

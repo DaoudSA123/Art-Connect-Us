@@ -26,8 +26,19 @@ export const CartProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [sessionId] = useState(() => generateSessionId());
 
-  // API base URL
-  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  // API base URL - use relative path for Vercel, localhost for development
+  // Only use REACT_APP_API_URL if it's a valid URL (starts with http or /)
+  let API_BASE;
+  if (process.env.NODE_ENV === 'production') {
+    API_BASE = '/api';
+  } else {
+    const envUrl = process.env.REACT_APP_API_URL;
+    if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
+      API_BASE = envUrl;
+    } else {
+      API_BASE = 'http://localhost:5000/api';
+    }
+  }
 
   // Load cart from database on mount
   useEffect(() => {
@@ -45,6 +56,10 @@ export const CartProvider = ({ children }) => {
           'Content-Type': 'application/json',
         },
       });
+
+      if (!response.ok && response.status !== 404) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
 
