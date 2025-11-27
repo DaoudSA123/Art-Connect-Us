@@ -124,7 +124,16 @@ const ProductShowcase = () => {
       const response = await fetch(`${API_BASE}/products`);
       
       if (!response.ok) {
+        const text = await response.text();
+        console.error('API returned non-OK status:', response.status, 'Response:', text);
         throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('API returned non-JSON response. Content-Type:', contentType, 'Response:', text.substring(0, 200));
+        throw new Error(`Expected JSON but got ${contentType}`);
       }
       
       const data = await response.json();
@@ -150,7 +159,8 @@ const ProductShowcase = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
-      console.error('API_BASE was:', process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
+      console.error('API_BASE was:', API_BASE);
+      console.error('Full URL was:', `${API_BASE}/products`);
       setLoading(false);
       // Set empty products array so it doesn't show loading forever
       setProducts([]);
