@@ -1,10 +1,22 @@
 {
-  "buildCommand": "npm install --prefix client && npm run build --prefix client",
-  "outputDirectory": "client/build",
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/((?!api).*)",
-      "destination": "/client/build/index.html"
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/client/build/$1"
     }
   ]
 }
