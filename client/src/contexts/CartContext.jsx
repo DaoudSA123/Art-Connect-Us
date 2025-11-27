@@ -26,23 +26,8 @@ export const CartProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [sessionId] = useState(() => generateSessionId());
 
-  // API base URL - use relative path for Vercel, localhost for development
-  // Check if we're on localhost or a Vercel domain
-  const isProduction = typeof window !== 'undefined' && 
-                      (process.env.NODE_ENV === 'production' || 
-                       window.location.hostname !== 'localhost');
-  
-  let API_BASE;
-  if (isProduction) {
-    API_BASE = '/api';
-  } else {
-    const envUrl = process.env.REACT_APP_API_URL;
-    if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
-      API_BASE = envUrl;
-    } else {
-      API_BASE = 'http://localhost:5000/api';
-    }
-  }
+  // API base URL - use Render backend URL in production, localhost in development
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   // Load cart from database on mount
   useEffect(() => {
