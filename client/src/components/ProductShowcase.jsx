@@ -103,23 +103,24 @@ const ProductShowcase = () => {
   }, [isVisible]);
 
   const fetchProducts = async () => {
-    try {
-      // Use relative path in production (Vercel), localhost in development
-      // Check if we're on localhost or a Vercel domain
-      const isProduction = process.env.NODE_ENV === 'production' || 
-                          window.location.hostname !== 'localhost';
-      
-      let API_BASE;
-      if (isProduction) {
-        API_BASE = '/api';
+    // Use relative path in production (Vercel), localhost in development
+    // Check if we're on localhost or a Vercel domain
+    const isProduction = process.env.NODE_ENV === 'production' || 
+                        window.location.hostname !== 'localhost';
+    
+    let API_BASE;
+    if (isProduction) {
+      API_BASE = '/api';
+    } else {
+      const envUrl = process.env.REACT_APP_API_URL;
+      if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
+        API_BASE = envUrl;
       } else {
-        const envUrl = process.env.REACT_APP_API_URL;
-        if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
-          API_BASE = envUrl;
-        } else {
-          API_BASE = 'http://localhost:5000/api';
-        }
+        API_BASE = 'http://localhost:5000/api';
       }
+    }
+    
+    try {
       console.log('Fetching products from:', `${API_BASE}/products`);
       const response = await fetch(`${API_BASE}/products`);
       
