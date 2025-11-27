@@ -8,5 +8,11 @@
         "distDir": "build"
       }
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api).*)",
+      "destination": "/client/build/index.html"
+    }
   ]
 }
