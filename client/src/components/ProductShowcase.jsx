@@ -103,28 +103,38 @@ const ProductShowcase = () => {
   }, [isVisible]);
 
   const fetchProducts = async () => {
-    try {
-      // Use relative path in production (Vercel), localhost in development
-      // Check if we're on localhost or a Vercel domain
-      const isProduction = process.env.NODE_ENV === 'production' || 
-                          window.location.hostname !== 'localhost';
-      
-      let API_BASE;
-      if (isProduction) {
-        API_BASE = '/api';
+    // Use relative path in production (Vercel), localhost in development
+    // Check if we're on localhost or a Vercel domain
+    const isProduction = process.env.NODE_ENV === 'production' || 
+                        window.location.hostname !== 'localhost';
+    
+    let API_BASE;
+    if (isProduction) {
+      API_BASE = '/api';
+    } else {
+      const envUrl = process.env.REACT_APP_API_URL;
+      if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
+        API_BASE = envUrl;
       } else {
-        const envUrl = process.env.REACT_APP_API_URL;
-        if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
-          API_BASE = envUrl;
-        } else {
-          API_BASE = 'http://localhost:5000/api';
-        }
+        API_BASE = 'http://localhost:5000/api';
       }
+    }
+    
+    try {
       console.log('Fetching products from:', `${API_BASE}/products`);
       const response = await fetch(`${API_BASE}/products`);
       
       if (!response.ok) {
+        const text = await response.text();
+        console.error('API returned non-OK status:', response.status, 'Response:', text);
         throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('API returned non-JSON response. Content-Type:', contentType, 'Response:', text.substring(0, 200));
+        throw new Error(`Expected JSON but got ${contentType}`);
       }
       
       const data = await response.json();
@@ -150,7 +160,8 @@ const ProductShowcase = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
-      console.error('API_BASE was:', process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
+      console.error('API_BASE was:', API_BASE);
+      console.error('Full URL was:', `${API_BASE}/products`);
       setLoading(false);
       // Set empty products array so it doesn't show loading forever
       setProducts([]);
