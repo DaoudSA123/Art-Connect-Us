@@ -12,21 +12,8 @@ const CheckoutSuccess = () => {
 
   useEffect(() => {
     if (sessionId) {
-      // Use relative path in production (Vercel), localhost in development
-      const isProduction = process.env.NODE_ENV === 'production' || 
-                          window.location.hostname !== 'localhost';
-      
-      let API_BASE;
-      if (isProduction) {
-        API_BASE = '/api';
-      } else {
-        const envUrl = process.env.REACT_APP_API_URL;
-        if (envUrl && (envUrl.startsWith('http') || envUrl.startsWith('/'))) {
-          API_BASE = envUrl;
-        } else {
-          API_BASE = 'http://localhost:5000/api';
-        }
-      }
+      // Use Render backend URL in production, localhost in development
+      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       
       fetch(`${API_BASE}/stripe/session/${sessionId}`)
         .then(res => res.json())
