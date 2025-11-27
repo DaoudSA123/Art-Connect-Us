@@ -110,6 +110,9 @@ const ProductShowcase = () => {
       console.log('Fetching products from:', `${API_BASE}/products`);
       const response = await fetch(`${API_BASE}/products`);
       
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
         const text = await response.text();
         console.error('API returned non-OK status:', response.status, 'Response:', text);
