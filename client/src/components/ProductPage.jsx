@@ -32,13 +32,14 @@ const ProductPage = () => {
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${id}`);
+      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE}/products/${id}`);
       if (response.ok) {
         const data = await response.json();
         setProduct(data);
       } else {
         // If specific product not found, fetch all and find by ID
-        const allResponse = await fetch('http://localhost:5000/api/products');
+        const allResponse = await fetch(`${API_BASE}/products`);
         const allProducts = await allResponse.json();
         const foundProduct = allProducts.find(p => p.id === parseInt(id));
         setProduct(foundProduct);
