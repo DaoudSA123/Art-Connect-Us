@@ -52,6 +52,33 @@ luxury-clothing-ecommerce/
 ### Prerequisites
 - Node.js (v14 or higher)
 - npm or yarn
+- MongoDB database (for cart and newsletter functionality)
+- Klaviyo account (for SMS newsletter integration - optional)
+
+### Environment Variables
+
+Create a `.env` file in the `server/` directory with the following variables:
+
+```env
+# MongoDB Connection
+MONGODB_URI=your_mongodb_connection_string
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000,https://your-production-domain.com
+
+# Klaviyo SMS Integration (Optional)
+KLAVIYO_API_KEY=your_klaviyo_private_api_key
+
+# Stripe (if using payment integration)
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+```
+
+**Note**: The `KLAVIYO_API_KEY` is optional. If not provided, newsletter subscriptions will still work in MongoDB but won't sync to Klaviyo.
 
 ### Installation
 
@@ -65,7 +92,11 @@ luxury-clothing-ecommerce/
    npm run install-all
    ```
 
-3. **Start the development servers**
+3. **Set up environment variables**
+   - Create a `.env` file in the `server/` directory
+   - Add the required environment variables (see above)
+
+4. **Start the development servers**
    ```bash
    npm run dev
    ```

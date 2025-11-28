@@ -1,12 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Cart = require('../models/Cart');
 const Order = require('../models/Order');
+
+// Initialize Stripe only if API key is provided
+const getStripe = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('Stripe API key not configured. Please set STRIPE_SECRET_KEY environment variable.');
+  }
+  return require('stripe')(process.env.STRIPE_SECRET_KEY);
+};
 
 // POST /api/stripe/create-checkout-session
 router.post('/create-checkout-session', async (req, res) => {
   try {
+    const stripe = getStripe();
     const { sessionId, successUrl, cancelUrl } = req.body;
 
     if (!sessionId) {
@@ -109,6 +117,7 @@ router.post('/create-checkout-session', async (req, res) => {
 // GET /api/stripe/session/:sessionId - Verify payment session
 router.get('/session/:sessionId', async (req, res) => {
   try {
+    const stripe = getStripe();
     const { sessionId } = req.params;
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Setting up Luxury Streetwear Ecommerce Website..."
+echo "🚀 Setting up acu website..."
 
 # Install root dependencies
 echo "📦 Installing root dependencies..."

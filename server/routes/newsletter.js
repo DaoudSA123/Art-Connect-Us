@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Newsletter = require('../models/Newsletter');
 const rateLimit = require('express-rate-limit');
+const { addSMSSubscriber } = require('../services/klaviyo');
 
 // Rate limiting for newsletter operations
 // More lenient in development, stricter in production
@@ -20,6 +21,25 @@ const newsletterRateLimit = rateLimit({
 
 // Apply rate limiting to all newsletter routes
 router.use(newsletterRateLimit);
+
+// Helper function to convert phone to E.164 (same as in model)
+const formatToE164 = (phone) => {
+  const cleaned = phone.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('+')) {
+    const digits = cleaned.substring(1);
+    if (digits.length >= 10) {
+      return `+${digits}`;
+    }
+  }
+  const digits = cleaned.replace(/\D/g, '');
+  if (digits.length < 10) return null;
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  } else if (digits.length === 11 && digits.startsWith('1')) {
+    return `+${digits}`;
+  }
+  return `+1${digits.slice(-10)}`;
+};
 
 // Input validation middleware - phone only
 const validatePhone = (req, res, next) => {
@@ -63,6 +83,32 @@ router.post('/subscribe', validatePhone, async (req, res) => {
     const result = await Newsletter.subscribe(phone, ipAddress, userAgent);
     
     if (result.success) {
+      // Sync to Klaviyo (non-blocking - don't fail subscription if Klaviyo fails)
+      // Get the E.164 formatted phone number for Klaviyo
+      const phoneE164 = formatToE164(phone);
+      
+      if (phoneE164) {
+        // Call Klaviyo asynchronously - don't wait for it or fail on error
+        addSMSSubscriber(phoneE164, {
+          discountCode: result.discountCode,
+          subscribedAt: new Date().toISOString(),
+          source: 'website_newsletter'
+        })
+        .then(klaviyoResult => {
+          if (klaviyoResult.success) {
+            console.log('✅ Klaviyo sync successful');
+          } else {
+            console.warn('⚠️  Klaviyo sync failed (non-blocking):', klaviyoResult.message);
+          }
+        })
+        .catch(error => {
+          // Log error but don't fail the subscription
+          console.error('❌ Klaviyo integration error (non-blocking):', error.message);
+        });
+      } else {
+        console.warn('⚠️  Could not format phone number for Klaviyo:', phone);
+      }
+      
       res.json({
         success: true,
         message: result.message,
@@ -86,25 +132,6 @@ router.post('/subscribe', validatePhone, async (req, res) => {
     });
   }
 });
-
-// Helper function to convert phone to E.164 (same as in model)
-const formatToE164 = (phone) => {
-  const cleaned = phone.replace(/[^\d+]/g, '');
-  if (cleaned.startsWith('+')) {
-    const digits = cleaned.substring(1);
-    if (digits.length >= 10) {
-      return `+${digits}`;
-    }
-  }
-  const digits = cleaned.replace(/\D/g, '');
-  if (digits.length < 10) return null;
-  if (digits.length === 10) {
-    return `+1${digits}`;
-  } else if (digits.length === 11 && digits.startsWith('1')) {
-    return `+${digits}`;
-  }
-  return `+1${digits.slice(-10)}`;
-};
 
 // POST /api/newsletter/unsubscribe - Unsubscribe from newsletter
 router.post('/unsubscribe', validatePhone, async (req, res) => {
