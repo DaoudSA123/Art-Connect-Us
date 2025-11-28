@@ -81,6 +81,12 @@ app.use(cors(corsOptions));
 // IMPORTANT: Stripe webhook route must be BEFORE body parsing middleware
 // This is because Stripe needs the raw body for signature verification
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  // Check if Stripe is configured
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('Stripe webhook called but Stripe is not configured');
+    return res.status(500).json({ error: 'Stripe is not configured' });
+  }
+
   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
   const Cart = require('./models/Cart');
   const Order = require('./models/Order');
