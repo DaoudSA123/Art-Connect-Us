@@ -8,6 +8,81 @@ const Footer = ({ isContactFormOpen: externalIsOpen, setIsContactFormOpen: exter
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isContactFormOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const setIsContactFormOpen = externalSetIsOpen !== undefined ? externalSetIsOpen : setInternalIsOpen;
+  
+  // Newsletter signup state
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [error, setError] = useState('');
+
+  // Format phone number as user types
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digit characters
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Format as (XXX) XXX-XXXX
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
+  const handlePhoneChange = (e) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
+    // Clear error when user starts typing
+    if (error) {
+      setError('');
+    }
+  };
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    // Remove formatting to get just digits
+    const digitsOnly = phoneNumber.replace(/\D/g, '');
+    
+    if (!digitsOnly || digitsOnly.length < 10) {
+      setError('Please enter a valid phone number');
+      return;
+    }
+
+    setError(''); // Clear any previous errors
+    setIsSubmitting(true);
+    
+    try {
+      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE}/newsletter/subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone: digitsOnly }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsSubscribed(true);
+        setError(''); // Clear any errors on success
+        setPhoneNumber(''); // Clear the input
+        // Reset success message after 5 seconds
+        setTimeout(() => {
+          setIsSubscribed(false);
+        }, 5000);
+      } else {
+        setError(data.message || 'Failed to subscribe. Please try again.');
+      }
+      
+    } catch (error) {
+      console.error('Subscription error:', error);
+      setError('Failed to subscribe. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <footer 
@@ -67,16 +142,123 @@ const Footer = ({ isContactFormOpen: externalIsOpen, setIsContactFormOpen: exter
               Newsletter
             </h4>
             <div className="w-full max-w-sm">
-              <div className="flex border border-gray-700/50 hover:border-denim-blue/50 transition-colors duration-300">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email"
-                  className="flex-1 bg-luxury-black/80 border-0 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-0 transition-colors duration-300 text-sm placeholder-gray-500/60"
-                />
-                <button className="bg-denim-blue text-white font-street font-bold px-4 md:px-5 py-2.5 hover:bg-denim-blue-light transition-all duration-300 uppercase tracking-wider text-xs focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 border-l border-denim-blue/30">
-                  Subscribe
-                </button>
-              </div>
+              {!isSubscribed ? (
+                <form onSubmit={handleNewsletterSubmit} className="w-full">
+                  <div className={`flex border ${error ? 'border-red-500/50' : 'border-gray-700/50'} hover:border-denim-blue/50 transition-colors duration-300`}>
+                    <input 
+                      type="tel" 
+                      value={phoneNumber}
+                      onChange={handlePhoneChange}
+                      placeholder="(123) 456-7890"
+                      maxLength="14"
+                      className="flex-1 bg-luxury-black/80 border-0 text-white px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-0 transition-colors duration-300 text-sm placeholder-gray-500/60"
+                    />
+                    <button 
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-denim-blue text-white font-street font-bold px-4 md:px-5 py-2.5 hover:bg-denim-blue-light transition-all duration-300 uppercase tracking-wider text-xs focus:outline-none focus:ring-2 focus:ring-denim-blue focus:ring-offset-2 border-l border-denim-blue/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? '...' : 'Subscribe'}
+                    </button>
+                  </div>
+                  {/* Error Message */}
+                  {error && (
+                    <div 
+                      style={{
+                        marginTop: '12px',
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%)',
+                        border: '1px solid rgba(239, 68, 68, 0.4)',
+                        borderRadius: '10px',
+                        padding: '14px 16px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px',
+                        boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        transform: 'translateY(0)',
+                        opacity: 1,
+                        transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    >
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        marginTop: '2px'
+                      }}>
+                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#fca5a5' }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </div>
+                      <p style={{
+                        color: '#fca5a5',
+                        fontSize: '13px',
+                        fontFamily: 'Arial, sans-serif',
+                        margin: 0,
+                        lineHeight: '1.6',
+                        fontWeight: '500',
+                        letterSpacing: '0.01em',
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                        paddingTop: '1px'
+                      }}>
+                        {error}
+                      </p>
+                    </div>
+                  )}
+                </form>
+              ) : (
+                <div 
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%)',
+                    border: '1px solid rgba(16, 185, 129, 0.4)',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    transform: 'translateY(0)',
+                    opacity: 1,
+                    transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginTop: '1px'
+                  }}>
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#6ee7b7' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p style={{
+                    color: '#6ee7b7',
+                    fontSize: '13px',
+                    fontFamily: 'Arial, sans-serif',
+                    margin: 0,
+                    lineHeight: '1.5',
+                    fontWeight: '500',
+                    letterSpacing: '0.01em',
+                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                  }}>
+                    Subscribed! Check your phone for updates.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -4,37 +4,49 @@ const Newsletter = require('../models/Newsletter');
 const rateLimit = require('express-rate-limit');
 
 // Rate limiting for newsletter operations
+// More lenient in development, stricter in production
 const newsletterRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 newsletter requests per windowMs
+  max: process.env.NODE_ENV === 'production' ? 10 : 100, // 10 requests per 15 min in prod, 100 in dev
   message: {
     error: 'Too many newsletter requests from this IP, please try again later.',
     retryAfter: '15 minutes'
   },
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip rate limiting if disabled via environment variable
+  skip: (req) => process.env.DISABLE_RATE_LIMIT === 'true',
 });
 
 // Apply rate limiting to all newsletter routes
 router.use(newsletterRateLimit);
 
-// Input validation middleware
-const validateEmail = (req, res, next) => {
-  const { email } = req.body;
+// Input validation middleware - phone only
+const validatePhone = (req, res, next) => {
+  const { phone } = req.body;
   
-  if (!email || typeof email !== 'string') {
+  // Phone number is required
+  if (!phone) {
     return res.status(400).json({
-      error: 'Invalid email',
-      message: 'Email is required and must be a string'
+      error: 'Invalid phone',
+      message: 'Phone number is required'
     });
   }
   
-  // Basic email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  // Validate phone
+  if (typeof phone !== 'string') {
     return res.status(400).json({
-      error: 'Invalid email format',
-      message: 'Please provide a valid email address'
+      error: 'Invalid phone',
+      message: 'Phone must be a string'
+    });
+  }
+  
+  // Basic validation - E.164 format will be handled in the model
+  const phoneDigits = phone.replace(/\D/g, '');
+  if (phoneDigits.length < 10) {
+    return res.status(400).json({
+      error: 'Invalid phone format',
+      message: 'Please provide a valid phone number (at least 10 digits)'
     });
   }
   
@@ -42,13 +54,13 @@ const validateEmail = (req, res, next) => {
 };
 
 // POST /api/newsletter/subscribe - Subscribe to newsletter
-router.post('/subscribe', validateEmail, async (req, res) => {
+router.post('/subscribe', validatePhone, async (req, res) => {
   try {
-    const { email } = req.body;
+    const { phone } = req.body;
     const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent') || '';
     
-    const result = await Newsletter.subscribeEmail(email, ipAddress, userAgent);
+    const result = await Newsletter.subscribe(phone, ipAddress, userAgent);
     
     if (result.success) {
       res.json({
@@ -75,20 +87,40 @@ router.post('/subscribe', validateEmail, async (req, res) => {
   }
 });
 
+// Helper function to convert phone to E.164 (same as in model)
+const formatToE164 = (phone) => {
+  const cleaned = phone.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('+')) {
+    const digits = cleaned.substring(1);
+    if (digits.length >= 10) {
+      return `+${digits}`;
+    }
+  }
+  const digits = cleaned.replace(/\D/g, '');
+  if (digits.length < 10) return null;
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  } else if (digits.length === 11 && digits.startsWith('1')) {
+    return `+${digits}`;
+  }
+  return `+1${digits.slice(-10)}`;
+};
+
 // POST /api/newsletter/unsubscribe - Unsubscribe from newsletter
-router.post('/unsubscribe', validateEmail, async (req, res) => {
+router.post('/unsubscribe', validatePhone, async (req, res) => {
   try {
-    const { email } = req.body;
+    const { phone } = req.body;
+    const normalizedPhone = formatToE164(phone) || phone.replace(/\D/g, '');
     
     const subscription = await Newsletter.findOne({ 
-      email: email.toLowerCase(),
+      phone: normalizedPhone,
       isActive: true 
     });
     
     if (!subscription) {
       return res.status(404).json({
         error: 'Subscription not found',
-        message: 'Email is not subscribed to our newsletter'
+        message: 'Phone number is not subscribed to our newsletter'
       });
     }
     
@@ -109,26 +141,25 @@ router.post('/unsubscribe', validateEmail, async (req, res) => {
   }
 });
 
-// GET /api/newsletter/status/:email - Check subscription status
-router.get('/status/:email', async (req, res) => {
+// GET /api/newsletter/status/:phone - Check subscription status by phone
+router.get('/status/:phone', async (req, res) => {
   try {
-    const { email } = req.params;
+    const { phone } = req.params;
     
-    if (!email || typeof email !== 'string') {
+    if (!phone || typeof phone !== 'string') {
       return res.status(400).json({
-        error: 'Invalid email parameter',
-        message: 'Email parameter is required'
+        error: 'Invalid phone parameter',
+        message: 'Phone parameter is required'
       });
     }
     
-    const subscription = await Newsletter.findOne({ 
-      email: email.toLowerCase() 
-    });
+    const normalizedPhone = formatToE164(phone) || phone.replace(/\D/g, '');
+    const subscription = await Newsletter.findOne({ phone: normalizedPhone });
     
     if (!subscription) {
       return res.json({
         subscribed: false,
-        message: 'Email is not subscribed'
+        message: 'Phone number is not subscribed'
       });
     }
     
@@ -136,7 +167,7 @@ router.get('/status/:email', async (req, res) => {
       subscribed: subscription.isActive,
       subscribedAt: subscription.subscribedAt,
       discountCode: subscription.discountCode,
-      message: subscription.isActive ? 'Email is subscribed' : 'Email is unsubscribed'
+      message: subscription.isActive ? 'Phone number is subscribed' : 'Phone number is unsubscribed'
     });
     
   } catch (error) {

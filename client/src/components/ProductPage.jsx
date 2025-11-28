@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Footer from './Footer.jsx';
 import { useCart } from '../contexts/CartContext';
+import useSwipeCarousel from '../hooks/useSwipeCarousel';
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -11,13 +12,92 @@ const ProductPage = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-  const { addToCart } = useCart();
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const { addToCart, showToast } = useCart();
+  const isThumbnailClickRef = useRef(false);
+  
+  // Track window size for arrow visibility
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Get all product images
+  const productImages = product ? (product.images || [product.image]) : [];
+  
+  // Initialize swipe carousel
+  const {
+    currentIndex: carouselIndex,
+    isAnimating,
+    containerRef,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    goToIndex,
+  } = useSwipeCarousel(productImages.length, {
+    threshold: 50,
+    resistance: 0.3,
+    snapDuration: 300,
+    momentumDecay: 0.92,
+    minVelocity: 0.1,
+  });
+  
+  // Sync carousel index with selectedImageIndex (when user swipes on mobile)
+  useEffect(() => {
+    if (!isAnimating && carouselIndex !== selectedImageIndex && productImages.length > 0 && !isThumbnailClickRef.current && !isDesktop) {
+      setSelectedImageIndex(carouselIndex);
+    }
+    if (isThumbnailClickRef.current) {
+      isThumbnailClickRef.current = false;
+    }
+  }, [carouselIndex, isAnimating, productImages.length, selectedImageIndex, isDesktop]);
 
   useEffect(() => {
     fetchProduct();
   }, [id]);
+
+  // Update carousel position when selectedImageIndex changes (for desktop)
+  useEffect(() => {
+    if (product && containerRef.current && productImages.length > 0) {
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          const containerWidth = containerRef.current.parentElement?.offsetWidth || containerRef.current.offsetWidth || 0;
+          if (containerWidth > 0) {
+            const translateX = -selectedImageIndex * containerWidth;
+            containerRef.current.style.transition = isDesktop ? 'transform 0.3s ease-out' : 'none';
+            containerRef.current.style.transform = `translateX(${translateX}px)`;
+          }
+        }
+      });
+    }
+  }, [product, productImages.length, selectedImageIndex, isDesktop]);
+
+  // Keyboard navigation for desktop
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (productImages.length <= 1) return;
+      
+      if (e.key === 'ArrowLeft' && selectedImageIndex > 0) {
+        isThumbnailClickRef.current = true;
+        const newIndex = selectedImageIndex - 1;
+        setSelectedImageIndex(newIndex);
+        goToIndex(newIndex);
+      } else if (e.key === 'ArrowRight' && selectedImageIndex < productImages.length - 1) {
+        isThumbnailClickRef.current = true;
+        const newIndex = selectedImageIndex + 1;
+        setSelectedImageIndex(newIndex);
+        goToIndex(newIndex);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [selectedImageIndex, productImages.length, goToIndex]);
+
 
   useEffect(() => {
     if (product) {
@@ -56,20 +136,20 @@ const ProductPage = () => {
     const size = selectedSize || product.size || '32"';
     
     if (!size) {
-      alert('Please select a size');
+      showToast('Please select a size', 'error');
       return;
     }
     
     if (quantity > 10) {
-      alert('Maximum quantity is 10');
+      showToast('Maximum quantity is 10', 'error');
       return;
     }
     
     const success = await addToCart(product, size, quantity);
     if (success) {
-      alert(`Added ${product.name} (Size: ${size}, Qty: ${quantity}) to cart!`);
+      showToast('Added to cart', 'success');
     } else {
-      alert('Failed to add item to cart. Please try again.');
+      showToast('Failed to add item to cart. Please try again.', 'error');
     }
   };
 
@@ -84,39 +164,6 @@ const ProductPage = () => {
     }, 100);
   };
 
-  // Minimum swipe distance (in pixels)
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (product && product.images && product.images.length > 1) {
-      if (isLeftSwipe) {
-        // Swipe left - next image
-        setSelectedImageIndex((prev) => 
-          prev === product.images.length - 1 ? 0 : prev + 1
-        );
-      } else if (isRightSwipe) {
-        // Swipe right - previous image
-        setSelectedImageIndex((prev) => 
-          prev === 0 ? product.images.length - 1 : prev - 1
-        );
-      }
-    }
-  };
 
   if (loading) {
     return (
@@ -192,32 +239,190 @@ const ProductPage = () => {
           {/* Product Image */}
           <div className="space-y-3">
             <div 
-              className="relative overflow-hidden rounded-none border-2 border-gray-700/80 bg-gray-900/50 flex items-center justify-center backdrop-blur-sm"
-              style={{ minHeight: '800px', height: '860px' }}
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
+              className="relative overflow-hidden rounded-none border-2 border-gray-700/80 bg-gray-900/50 backdrop-blur-sm"
+              style={{ 
+                minHeight: '800px', 
+                height: '860px',
+                touchAction: 'pan-y pinch-zoom',
+                WebkitOverflowScrolling: 'touch'
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
-              <img 
-                src={product.images ? product.images[selectedImageIndex] : product.image} 
-                alt={product.name}
-                className={`w-full h-[800px] object-contain ${
-                  product.name === "Double Waist Jeans" && selectedImageIndex === 1
-                    ? ""
-                    : ""
-                }`}
-                style={
-                  product.name === "Double Waist Jeans" && selectedImageIndex === 1
-                    ? { transform: "scale(1.3)", transformOrigin: "2.5% center" }
-                    : {}
-                }
-              />
+              {/* Image Carousel Container */}
+              <div
+                ref={containerRef}
+                className="flex h-full w-full"
+                style={{
+                  willChange: 'transform',
+                  WebkitTransform: 'translateZ(0)',
+                  transform: 'translateZ(0)',
+                }}
+              >
+                {productImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 w-full h-full flex items-center justify-center cursor-pointer"
+                    style={{ minWidth: '100%' }}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`${product.name} view ${index + 1}`}
+                      className={`w-full h-[800px] object-contain ${
+                        product.name === "Double Waist Jeans" && index === 1
+                          ? ""
+                          : ""
+                      }`}
+                      style={
+                        product.name === "Double Waist Jeans" && index === 1
+                          ? { transform: "scale(1.3)", transformOrigin: "2.5% center", pointerEvents: 'none' }
+                          : { pointerEvents: 'none' }
+                      }
+                      draggable={false}
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              {/* Sold Out Overlay */}
               {!product.inStock && (
-                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center pointer-events-none">
                   <span className="bg-denim-brown text-white px-7 py-3.5 text-lg font-bold uppercase tracking-wider rounded border border-denim-brown/50 shadow-lg">
                     Sold Out
                   </span>
                 </div>
+              )}
+              
+              {/* Image Indicators (optional, shows current image position) */}
+              {productImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                  {productImages.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        index === selectedImageIndex
+                          ? 'w-8 bg-denim-blue'
+                          : 'w-2 bg-gray-600/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+              
+              {/* Desktop Navigation Arrows */}
+              {productImages.length > 1 && (
+                <>
+                  {/* Previous Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      if (selectedImageIndex > 0) {
+                        const newIndex = selectedImageIndex - 1;
+                        isThumbnailClickRef.current = true;
+                        setSelectedImageIndex(newIndex);
+                        // Update will happen via useEffect
+                      }
+                    }}
+                    style={{ 
+                      position: 'absolute',
+                      left: '24px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      display: window.innerWidth >= 768 ? 'flex' : 'none',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '56px',
+                      height: '56px',
+                      backgroundColor: selectedImageIndex === 0 ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.8)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      borderRadius: '50%',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      cursor: selectedImageIndex === 0 ? 'not-allowed' : 'pointer',
+                      opacity: selectedImageIndex === 0 ? 0.4 : 1,
+                      pointerEvents: selectedImageIndex === 0 ? 'none' : 'auto',
+                      boxShadow: '0 6px 20px rgba(0, 0, 0, 0.6)',
+                      zIndex: 999,
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedImageIndex > 0) {
+                        e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+                        e.currentTarget.style.transform = 'translateY(-50%) scale(1.2)';
+                        e.currentTarget.style.boxShadow = '0 8px 28px rgba(0, 0, 0, 0.8)';
+                        e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.5)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                      e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.6)';
+                      e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+                    }}
+                    aria-label="Previous image"
+                  >
+                    <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Next Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      if (selectedImageIndex < productImages.length - 1) {
+                        const newIndex = selectedImageIndex + 1;
+                        isThumbnailClickRef.current = true;
+                        setSelectedImageIndex(newIndex);
+                        // Update will happen via useEffect
+                      }
+                    }}
+                    style={{ 
+                      position: 'absolute',
+                      right: '24px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      display: window.innerWidth >= 768 ? 'flex' : 'none',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '56px',
+                      height: '56px',
+                      backgroundColor: selectedImageIndex === productImages.length - 1 ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.8)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      borderRadius: '50%',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      cursor: selectedImageIndex === productImages.length - 1 ? 'not-allowed' : 'pointer',
+                      opacity: selectedImageIndex === productImages.length - 1 ? 0.4 : 1,
+                      pointerEvents: selectedImageIndex === productImages.length - 1 ? 'none' : 'auto',
+                      boxShadow: '0 6px 20px rgba(0, 0, 0, 0.6)',
+                      zIndex: 999,
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedImageIndex < productImages.length - 1) {
+                        e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+                        e.currentTarget.style.transform = 'translateY(-50%) scale(1.2)';
+                        e.currentTarget.style.boxShadow = '0 8px 28px rgba(0, 0, 0, 0.8)';
+                        e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.5)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                      e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.6)';
+                      e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+                    }}
+                    aria-label="Next image"
+                  >
+                    <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </>
               )}
             </div>
             
@@ -226,7 +431,14 @@ const ProductPage = () => {
               {(product.images || [product.image]).slice(0, 4).map((img, i) => (
                 <div 
                   key={i}
-                  onClick={() => setSelectedImageIndex(i)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (i !== selectedImageIndex) {
+                      isThumbnailClickRef.current = true;
+                      setSelectedImageIndex(i);
+                      // Update will happen via useEffect
+                    }
+                  }}
                   className={`rounded-none border-2 transition-all duration-300 cursor-pointer overflow-hidden flex items-center justify-center bg-gray-900/50 backdrop-blur-sm ${
                     selectedImageIndex === i 
                       ? 'border-denim-blue ring-2 ring-denim-blue ring-opacity-50 scale-105 shadow-lg' 
@@ -238,6 +450,7 @@ const ProductPage = () => {
                     src={img} 
                     alt={`${product.name} view ${i + 1}`}
                     className="w-full h-auto max-h-24 object-contain"
+                    draggable={false}
                   />
                 </div>
               ))}
