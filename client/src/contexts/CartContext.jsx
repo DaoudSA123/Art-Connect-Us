@@ -25,6 +25,7 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sessionId] = useState(() => generateSessionId());
+  const [toast, setToast] = useState(null); // { message, type: 'success' | 'error' | 'info' }
 
   // API base URL
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -402,11 +403,22 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
+  // Toast notification function
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
+  };
+
   const value = {
     cartItems,
     loading,
     error,
     sessionId,
+    toast,
+    showToast,
     addToCart,
     removeFromCart,
     updateQuantity,
@@ -419,6 +431,96 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider value={value}>
       {children}
+      {/* Toast Notification */}
+      {toast && (
+        <div 
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '24px',
+            zIndex: 100000,
+            transform: 'translateY(0)',
+            opacity: 1,
+            transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+        >
+          <div 
+            style={{
+              background: toast.type === 'success' 
+                ? 'linear-gradient(135deg, rgba(74, 111, 165, 0.15) 0%, rgba(58, 46, 40, 0.1) 100%)'
+                : toast.type === 'error'
+                ? 'linear-gradient(135deg, rgba(58, 46, 40, 0.15) 0%, rgba(139, 69, 19, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(74, 111, 165, 0.15) 0%, rgba(58, 46, 40, 0.1) 100%)',
+              border: toast.type === 'success'
+                ? '1px solid rgba(74, 111, 165, 0.4)'
+                : toast.type === 'error'
+                ? '1px solid rgba(139, 69, 19, 0.4)'
+                : '1px solid rgba(74, 111, 165, 0.4)',
+              borderRadius: '10px',
+              padding: '14px 16px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px',
+              boxShadow: toast.type === 'success'
+                ? '0 4px 12px rgba(74, 111, 165, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                : toast.type === 'error'
+                ? '0 4px 12px rgba(139, 69, 19, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                : '0 4px 12px rgba(74, 111, 165, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              minWidth: '300px',
+              maxWidth: '400px'
+            }}
+          >
+            <div style={{
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              backgroundColor: toast.type === 'success'
+                ? 'rgba(74, 111, 165, 0.2)'
+                : toast.type === 'error'
+                ? 'rgba(139, 69, 19, 0.2)'
+                : 'rgba(74, 111, 165, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              marginTop: '1px'
+            }}>
+              {toast.type === 'success' ? (
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#8B9DC3' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : toast.type === 'error' ? (
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#D4A574' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#8B9DC3' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+            </div>
+            <p style={{
+              color: toast.type === 'success'
+                ? '#8B9DC3'
+                : toast.type === 'error'
+                ? '#D4A574'
+                : '#8B9DC3',
+              fontSize: '14px',
+              fontFamily: 'Arial, sans-serif',
+              margin: 0,
+              lineHeight: '1.5',
+              fontWeight: '500',
+              letterSpacing: '0.01em',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+              flex: 1
+            }}>
+              {toast.message}
+            </p>
+          </div>
+        </div>
+      )}
     </CartContext.Provider>
   );
 };

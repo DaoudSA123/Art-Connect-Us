@@ -12,7 +12,7 @@ const ProductShowcase = () => {
   const sectionRef = useRef(null);
   const cardRefs = useRef({});
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, showToast } = useCart();
 
   useEffect(() => {
     const handleResize = () => {
@@ -131,7 +131,7 @@ const ProductShowcase = () => {
     e.stopPropagation();
     
     if (!product.inStock) {
-      alert(`${product.name} is currently sold out. We'll notify you when it's back in stock!`);
+      showToast(`${product.name} is currently sold out. We'll notify you when it's back in stock!`, 'error');
       return;
     }
 
@@ -139,9 +139,9 @@ const ProductShowcase = () => {
     const size = selectedSizes[product.id] || product.size || '32"';
     const success = await addToCart(product, size, 1);
     if (success) {
-      alert(`Added ${product.name} (Size: ${size}) to cart!`);
+      showToast('Added to cart', 'success');
     } else {
-      alert('Failed to add item to cart. Please try again.');
+      showToast('Failed to add item to cart. Please try again.', 'error');
     }
   };
 
