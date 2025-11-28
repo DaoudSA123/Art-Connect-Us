@@ -39,9 +39,7 @@ const NewsletterPopup = () => {
     setIsSubmitting(true);
     
     try {
-      // Use Render backend URL in production, localhost in development
-      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_BASE}/newsletter/subscribe`, {
+      const response = await fetch('http://localhost:5000/api/newsletter/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

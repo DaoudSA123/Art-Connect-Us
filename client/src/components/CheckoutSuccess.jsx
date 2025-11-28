@@ -12,7 +12,6 @@ const CheckoutSuccess = () => {
 
   useEffect(() => {
     if (sessionId) {
-      // Use Render backend URL in production, localhost in development
       const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       
       fetch(`${API_BASE}/stripe/session/${sessionId}`)
