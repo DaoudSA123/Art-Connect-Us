@@ -32,15 +32,13 @@ const ProductPage = () => {
 
   const fetchProduct = async () => {
     try {
-      // Use Render backend URL in production, localhost in development
-      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_BASE}/products/${id}`);
+      const response = await fetch(`http://localhost:5000/api/products/${id}`);
       if (response.ok) {
         const data = await response.json();
         setProduct(data);
       } else {
         // If specific product not found, fetch all and find by ID
-        const allResponse = await fetch(`${API_BASE}/products`);
+        const allResponse = await fetch('http://localhost:5000/api/products');
         const allProducts = await allResponse.json();
         const foundProduct = allProducts.find(p => p.id === parseInt(id));
         setProduct(foundProduct);
@@ -188,12 +186,13 @@ const ProductPage = () => {
       </div>
 
       {/* Product Content */}
-      <div className="max-w-7xl mx-auto py-6 md:py-10 px-6 md:px-8 pb-16 md:pb-10">
+      <div className="max-w-7xl mx-auto py-6 md:py-10 px-6 md:px-8 pb-16 md:pb-10 mb-12 md:mb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Image */}
           <div className="space-y-3">
             <div 
               className="relative overflow-hidden rounded-none border-2 border-gray-700/80 bg-gray-900/50 flex items-center justify-center backdrop-blur-sm"
+              style={{ minHeight: '800px', height: '860px' }}
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
@@ -201,7 +200,16 @@ const ProductPage = () => {
               <img 
                 src={product.images ? product.images[selectedImageIndex] : product.image} 
                 alt={product.name}
-                className="w-full h-auto max-h-[550px] object-contain"
+                className={`w-full h-[800px] object-contain ${
+                  product.name === "Double Waist Jeans" && selectedImageIndex === 1
+                    ? ""
+                    : ""
+                }`}
+                style={
+                  product.name === "Double Waist Jeans" && selectedImageIndex === 1
+                    ? { transform: "scale(1.3)", transformOrigin: "2.5% center" }
+                    : {}
+                }
               />
               {!product.inStock && (
                 <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">

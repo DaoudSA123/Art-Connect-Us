@@ -103,40 +103,9 @@ const ProductShowcase = () => {
   }, [isVisible]);
 
   const fetchProducts = async () => {
-    // Use Render backend URL in production, localhost in development
-    const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-    
     try {
-      console.log('Fetching products from:', `${API_BASE}/products`);
-      const response = await fetch(`${API_BASE}/products`);
-      
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      if (!response.ok) {
-        const text = await response.text();
-        console.error('API returned non-OK status:', response.status, 'Response:', text);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('API returned non-JSON response. Content-Type:', contentType, 'Response:', text.substring(0, 200));
-        throw new Error(`Expected JSON but got ${contentType}`);
-      }
-      
+      const response = await fetch('http://localhost:5000/api/products');
       const data = await response.json();
-      console.log('Products fetched successfully:', data);
-      
-      // Ensure data is an array
-      if (!Array.isArray(data)) {
-        console.error('Products data is not an array:', data);
-        setProducts([]);
-        setLoading(false);
-        return;
-      }
-      
       setProducts(data);
       // Initialize selected sizes for products with availableSizes
       const initialSizes = {};
@@ -149,11 +118,7 @@ const ProductShowcase = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
-      console.error('API_BASE was:', API_BASE);
-      console.error('Full URL was:', `${API_BASE}/products`);
       setLoading(false);
-      // Set empty products array so it doesn't show loading forever
-      setProducts([]);
     }
   };
 
@@ -228,7 +193,7 @@ const ProductShowcase = () => {
 
         {/* Products Grid */}
         <div className="flex justify-center items-stretch gap-6 md:gap-8 lg:gap-10">
-          {Array.isArray(products) && products.length > 0 ? products.map((product, index) => (
+          {products.map((product, index) => (
             <div 
               key={product.id} 
               ref={(el) => {
@@ -353,12 +318,7 @@ const ProductShowcase = () => {
                 </button>
               </div>
             </div>
-          )) : (
-            <div className="text-center py-12">
-              <p className="text-gray-400">No products available at the moment.</p>
-              <p className="text-gray-500 text-sm mt-2">Please check back later.</p>
-            </div>
-          )}
+          ))}
         </div>
 
         {/* View All Section */}

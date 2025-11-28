@@ -26,7 +26,7 @@ export const CartProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [sessionId] = useState(() => generateSessionId());
 
-  // API base URL - use Render backend URL in production, localhost in development
+  // API base URL
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   // Load cart from database on mount
@@ -45,10 +45,6 @@ export const CartProvider = ({ children }) => {
           'Content-Type': 'application/json',
         },
       });
-
-      if (!response.ok && response.status !== 404) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       const data = await response.json();
 

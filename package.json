@@ -7,9 +7,8 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm start",
-    "build": "cd client && npm install && npm run build",
-    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
-    "vercel-build": "npm install --prefix client && npm run build --prefix client"
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
   },
   "keywords": [
     "ecommerce",
@@ -25,7 +24,7 @@
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
-    "mongoose": "^8.19.2",
+    "mongoose": "^9.0.0",
     "stripe": "^20.0.0"
   }
 }

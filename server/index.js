@@ -49,37 +49,8 @@ const generalRateLimit = rateLimit({
 app.use(generalRateLimit);
 
 // CORS configuration
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(origin => {
-      const trimmed = origin.trim();
-      // Ensure protocol is included
-      if (trimmed && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
-        return `https://${trimmed}`;
-      }
-      return trimmed;
-    })
-  : ['http://localhost:3000'];
-
-console.log('Allowed CORS origins:', allowedOrigins);
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Check if origin matches any allowed origin
-    const isAllowed = allowedOrigins.some(allowed => {
-      return origin === allowed || origin.startsWith(allowed);
-    });
-    
-    if (isAllowed || process.env.NODE_ENV !== 'production') {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked origin:', origin);
-      console.log('Allowed origins:', allowedOrigins);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -91,9 +62,6 @@ app.use(cors(corsOptions));
 // IMPORTANT: Stripe webhook route must be BEFORE body parsing middleware
 // This is because Stripe needs the raw body for signature verification
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return res.status(500).json({ error: 'STRIPE_SECRET_KEY not configured' });
-  }
   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
   const Cart = require('./models/Cart');
   const Order = require('./models/Order');
