@@ -104,7 +104,8 @@ const ProductShowcase = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products');
+      const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE}/products`);
       const data = await response.json();
       setProducts(data);
       // Initialize selected sizes for products with availableSizes
